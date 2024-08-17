@@ -3,20 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Transaction Manager</title>
+    <title>TM Setup</title>
     <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
-<!-- -->
+
 <body>
-    <h1>Transaction Manager</h1>
+    <h1>Transaction Manager Setup</h1>
     <form id="transaction-form">
-        <label for="description">Description:</label>
-        <input type="text" id="description" name="description" required>
 
-        <label for="amount">Amount:</label>
-        <input type="number" id="amount" name="amount" required>
+        <label for="closing-date">Please select the closing date for your card statement.</label>
+        <input type="date" id="closing-date" name="closing-date" required>
 
-        <button type="submit">Save Transaction</button>
+        <label for="monthly-limit">Enter your desired spending limit for each month.</label>
+        <input type="number" id="monthly-limit" name="monthly-limit" min="0" required>
+
+        <label for="time-zone">Select your time zone from the list below.</label>
+        <select id="time-zone" name="time-zone" size="6" required>
+            <option value="US/Alaska">US/Alaska</option>
+            <option value="US/Hawaii">US/Hawaii</option>
+            <option value="US/Pacific">US/Pacific</option>
+            <option value="US/Mountain">US/Mountain</option>
+            <option value="US/Central">US/Central</option>
+            <option value="US/Eastern">US/Eastern</option>
+        </select>
+        <button type="submit">Save Setup</button>
     </form>
 
     <script src="script.js"></script>
