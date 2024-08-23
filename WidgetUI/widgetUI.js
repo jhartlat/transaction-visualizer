@@ -8,7 +8,7 @@ function main() {
 
 
 /*
-  let totalSpent = parseFloat(output['Total Spent']);
+    let totalSpent = parseFloat(output['Total Spent']);
     let checkingAccount = parseFloat(totalSpent);
     let reservesAccount = 0;
     let recent = parseFloat(output['Recent']);
