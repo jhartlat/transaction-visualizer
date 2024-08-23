@@ -31,7 +31,7 @@ function totalAmount(widget, text) {
   else {
     addTextToWidget(widget, formattedText, Color.green(), 36, true); // isBold is set to true
   }
-  
+
 }
 
 function checkingAmount(widget, text, limit) {
@@ -42,7 +42,7 @@ function checkingAmount(widget, text, limit) {
   else {
     addTextToWidget(widget, 'CHKG $' + text, Color.green(), 16);
   }
-  
+
 }
 
 function reservesAmount(widget, text) {
@@ -53,7 +53,7 @@ function reservesAmount(widget, text) {
   else {
     addTextToWidget(widget, 'RES $' + text, Color.gray(), 16);
   }
-  
+
 }
 
 function recentAmount(widget, text) {
@@ -72,7 +72,7 @@ function lastUpdate(widget) {
 function getCurrentDate() {
   const date = new Date();
   const pad = (n) => n.toString().padStart(2, '0');
-  
+
   let month = pad(date.getMonth() + 1);
   month = month.startsWith('0') ? month.substring(1) : month;
   const day = pad(date.getDate());
@@ -81,7 +81,7 @@ function getCurrentDate() {
   const minutes = pad(date.getMinutes());
   const ampm = hours >= 12 ? 'PM' : 'AM';
   const formattedHours = (hours % 12 || 12);
-  
+
   const formattedDate = `${month}/${day}, ${formattedHours}:${minutes} ${ampm}`;
   return formattedDate;
 }
@@ -94,23 +94,12 @@ function allocateBill(totalSpent, checkingAccount, reservesAccount, monthlyLimit
         else {
             checkingAccount = totalSpent;
             reservesAccount = 0;
-        }    
+        }
         let balance = monthlyLimit - totalSpent;
         return [balance, checkingAccount, reservesAccount];
 }
 
-function getData(filePath) {
-    let fm = FileManager.iCloud();
-    // Ensure the file is downloaded from iCloud
-    if (fm.fileExists(filePath)) {
-        fm.downloadFileFromiCloud(filePath);
-        let content = fm.readString(filePath);
-        return content;
-    } 
-    else {
-        return "File does not exist.";
-    }
-}
+
 
 function convertToJSON(content) {
     let data = content.replace(/'/g, '"');
@@ -136,51 +125,67 @@ function formatLocaleTime() {
     let parts = time.split(':'); // '4', '07', '07 PM'
     let period = parts[2].substring(3);
     return parts[0] + ':' + parts[1] + ' ' + period
-    
+
+}
+
+function readFileFrom_iCloud(fileName) {
+  let fm = FileManager.iCloud();
+  let filePath = fm.joinPath(fm.documentsDirectory(), fileName);
+  if (fm.fileExists(filePath)) {
+    let content = fm.readString(filePath);
+    console.log(content);
+    return content;
+  }
+  else {
+    console.log("File does not exist.")
+  }
 }
 
 
 function main() {
-    
-    let filePath = '/var/mobile/Library/Mobile Documents/iCloud~dk~simonbs~Scriptable/Documents/user_data.json'
-    let content = getData(filePath);
+  const FILE_NAME = "user_data.json";
+
+  let content = readFileFrom_iCloud(FILE_NAME);
+
+    //let filePath = '/var/mobile/Library/Mobile Documents/iCloud~dk~simonbs~Scriptable/Documents/user_data.json'
+    //let content = getData(filePath);
     let output = convertToJSON(content);
     let totalSpent = parseFloat(output['Total Spent']);
     let checkingAccount = parseFloat(totalSpent);
     let reservesAccount = 0;
     let recent = parseFloat(output['Recent']);
-    
+
     let monthlyLimit = parseFloat(output['Monthly Limit']);
     let budget = allocateBill(totalSpent, checkingAccount, reservesAccount, monthlyLimit);
     let bal = budget[0];
     let chkg = budget[1];
     let res = budget[2];
     let fmtClosingDate = removeYearAndLeadingZero(output['Closing Date'])
-    
+
     let widget = new ListWidget();
 //     let topRow = widget.addStack();
-  
+
     closingDate(widget, fmtClosingDate);
     widget.addSpacer(10);
     totalAmount(widget, bal.toFixed(2));
     widget.addSpacer();
-    
+
     let horizontalStack1 = widget.addStack();
     horizontalStack1.addText("(BILL) ");  checkingAmount(horizontalStack1, chkg.toFixed(2), monthlyLimit);
     horizontalStack1.addSpacer(10);
     reservesAmount(horizontalStack1, res.toFixed(2));
     widget.addSpacer();
     console.log(recent);
-    
+
     let horizontalStack2 = widget.addStack();
     recentAmount(horizontalStack2, recent);
     horizontalStack2.addSpacer();
     lastUpdate(horizontalStack2);
-  
+
     displayWidget(widget);
     Script.complete();
-      
-    
+
+
 }
 
 main();
