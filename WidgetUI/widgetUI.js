@@ -1,24 +1,28 @@
+const utils = importModule('tmUtils');
 
 function main() {
   const FILE_NAME = "user_data.json";
 
-  let content = readFileFrom_iCloud(FILE_NAME);
-  let output = convertToJSON(content);
+  let content = utils.readFileFrom_iCloud(FILE_NAME);
+  let output = utils.convertToJSON(content);
 
+  let totalSpent = parseFloat(output['Total Spent']);
+  let checkingAccount = totalSpent;
+  let reservesAccount = 0;
+  let recent = parseFloat(output['Recent']);
+  let monthlyLimit = parseFloat(output['Monthly Limit']);
+
+  let budget = utils.allocateBill(totalSpent, checkingAccount, reservesAccount, monthlyLimit);
+
+  let totalBalance = budget[0];
+  let checkingBalance = budget[1];
+  let reservesBalance = budget[2];
+
+  let formatClosingDate = utils.removeYearAndLeadingZero(output['Closing Date'])
 
 
 /*
-    let totalSpent = parseFloat(output['Total Spent']);
-    let checkingAccount = parseFloat(totalSpent);
-    let reservesAccount = 0;
-    let recent = parseFloat(output['Recent']);
 
-    let monthlyLimit = parseFloat(output['Monthly Limit']);
-    let budget = allocateBill(totalSpent, checkingAccount, reservesAccount, monthlyLimit);
-    let bal = budget[0];
-    let chkg = budget[1];
-    let res = budget[2];
-    let fmtClosingDate = removeYearAndLeadingZero(output['Closing Date'])
 
     let widget = new ListWidget();
 //     let topRow = widget.addStack();
