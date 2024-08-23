@@ -101,11 +101,7 @@ function allocateBill(totalSpent, checkingAccount, reservesAccount, monthlyLimit
 
 
 
-function convertToJSON(content) {
-    let data = content.replace(/'/g, '"');
-    let dataObject = JSON.parse(data);
-    return dataObject;
-}
+
 
 // This is for the closing date
 function removeYearAndLeadingZero(dateString) {
@@ -141,16 +137,32 @@ function readFileFrom_iCloud(fileName) {
   }
 }
 
+function convertToJSON(content) {
+  try {
+    // Replace single quotes with double quotes
+    let modifiedContent = content.replace(/'/g, '"');
+
+    // Parse the JSON String
+    let result = JSON.parse(modifiedContent);
+
+    return result;
+  }
+  catch (error) {
+    console.error("Failed to convert content to JSON", error);
+  }
+  return null;
+}
 
 function main() {
   const FILE_NAME = "user_data.json";
 
   let content = readFileFrom_iCloud(FILE_NAME);
+  let output = convertToJSON(content);
 
-    //let filePath = '/var/mobile/Library/Mobile Documents/iCloud~dk~simonbs~Scriptable/Documents/user_data.json'
-    //let content = getData(filePath);
-    let output = convertToJSON(content);
-    let totalSpent = parseFloat(output['Total Spent']);
+
+  
+
+  let totalSpent = parseFloat(output['Total Spent']);
     let checkingAccount = parseFloat(totalSpent);
     let reservesAccount = 0;
     let recent = parseFloat(output['Recent']);
