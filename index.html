@@ -131,28 +131,29 @@
     <p id="demo"></p>
 
     <script>
-        function getYesterdayDate() {
+        function getTodayDate() {
             const today = new Date();
-            today.setDate(today.getDate() - 1); 
             const year = today.getFullYear();
-            const month = String(today.getMonth() + 1).padStart(2, '0'); 
+            const month = String(today.getMonth() + 1).padStart(2, '0');
             const day = String(today.getDate()).padStart(2, '0');
 
-            return `${month}-${day}-${year}`;
+            return `${year}-${month}-${day}`;
         }
 
-        document.getElementById("closing-date").min = getYesterdayDate();
+        document.getElementById("closing-date").min = getTodayDate();
 
         function myFunction() {
-            let x = document.getElementById("transaction-form");
+            let form = document.getElementById("transaction-form");
             let text = "";
-  
-            for (let i = 0; i < x.length; i++) {
-                if (i == (x.length - 1)) {
-                    text += x.elements[i].value + "";
+
+            for (let i = 0; i < form.length; i++) {
+                let value = form.elements[i].value;
+                
+                if (i == (form.length - 1)) {
+                    text += value + "";
                 }
                 else {
-                    text += x.elements[i].value + "<br>";
+                    text += value + "<br>";
                 }
             }
 
