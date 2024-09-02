@@ -106,23 +106,29 @@
             <option value="US/Central">US/Central</option>
             <option value="US/Eastern">US/Eastern</option>
         </select>
-        <button type="submit">Save Setup</button>
+        <button onclick="myFunction()" type="submit">Save Setup</button>
     </form>
 
+    <p id="demo"></p>
+
     <script>
-        document.getElementById("transaction-form").addEventListener("submit", function(event) {
-            event.preventDefault();
-            const formData = new FormData(event.target);
-            const data = Object.fromEntries(formData.entries());
-            const jsonData = JSON.stringify(data, null, 2);
-            const blob = new Blob([jsonData], { type: "application/json" });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = "tm_setup_data.json";
-            a.click();
-            URL.revokeObjectURL(url);
-        });
+        function myFunction() {
+            let x = document.getElementById("transaction-form");
+            let text = "";
+  
+            for (let i = 0; i < x.length ;i++) {
+                if (i == (x.length - 1)) {
+                    text += x.elements[i].value + "";
+                }
+                else {
+                    text += x.elements[i].value + "<br>";
+                }
+            }
+
+            document.getElementById("demo").innerHTML = text;
+            window.open("shortcuts://run-shortcut?name=HTML%20Form%20Tester&input=" + text);
+            window.close();
+        }
     </script>
 
 </body>
