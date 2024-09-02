@@ -161,6 +161,17 @@
             window.open("shortcuts://run-shortcut?name=HTML%20Form%20Tester&input=" + text);
             window.close();
         }
+
+        function validateDate() {
+            const closingDate = document.getElementById("closing-date").value;
+            const today = getTodayDate();
+
+            if (closingDate < today) {
+                alert("The selected date cannot be before today.");
+                return false; // Prevent form submission
+            }
+            return true; // Allow form submission
+        }
     </script>
 
 </body>
