@@ -108,7 +108,7 @@
 
 <body>
     <h1>Transaction Manager Setup</h1>
-    <form id="transaction-form">
+    <form id="transaction-form" onsubmit="return validateDate()">
 
         <label for="closing-date">Please select the closing date for your card statement.</label>
         <input type="date" id="closing-date" name="closing-date" required>
