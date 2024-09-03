@@ -108,10 +108,11 @@
 
 <body>
     <h1>Transaction Manager Setup</h1>
-    <form id="transaction-form" onsubmit="return validateDate()">
+    <form id="transaction-form">
 
         <label for="closing-date">Please select the closing date for your card statement.</label>
         <input type="date" id="closing-date" name="closing-date" required>
+        <span id="date-error" class="error">Please select a date that is today or later.</span>
 
         <label for="monthly-limit">Enter your desired spending limit for each month.</label>
         <input type="number" id="monthly-limit" name="monthly-limit" min="0" required>
@@ -125,53 +126,39 @@
             <option value="US/Central">US/Central</option>
             <option value="US/Eastern">US/Eastern</option>
         </select>
-        <button onclick="myFunction()" type="submit">Save Setup</button>
+        <button id="submit-button" type="submit" disabled>Save Setup</button>
     </form>
 
-    <p id="demo"></p>
-
     <script>
+        // Function to get today's date in YYYY-MM-DD format
         function getTodayDate() {
             const today = new Date();
             const year = today.getFullYear();
-            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const month = String(today.getMonth() + 1).padStart(2, '0'); // Months are zero-indexed
             const day = String(today.getDate()).padStart(2, '0');
 
             return `${year}-${month}-${day}`;
         }
 
-        document.getElementById("closing-date").min = getTodayDate();
+        // Set the min attribute of the date input to today's date
+        const dateInput = document.getElementById("closing-date");
+        dateInput.min = getTodayDate();
 
-        function myFunction() {
-            let form = document.getElementById("transaction-form");
-            let text = "";
-
-            for (let i = 0; i < form.length; i++) {
-                let value = form.elements[i].value;
-                
-                if (i == (form.length - 1)) {
-                    text += value + "";
-                }
-                else {
-                    text += value + "<br>";
-                }
-            }
-
-            document.getElementById("demo").innerHTML = text;
-            window.open("shortcuts://run-shortcut?name=HTML%20Form%20Tester&input=" + text);
-            window.close();
-        }
-
-        function validateDate() {
-            const closingDate = document.getElementById("closing-date").value;
+        // Add event listener to validate the date input
+        dateInput.addEventListener("input", function() {
+            const selectedDate = dateInput.value;
             const today = getTodayDate();
+            const errorElement = document.getElementById("date-error");
+            const submitButton = document.getElementById("submit-button");
 
-            if (closingDate < today) {
-                alert("The selected date cannot be before today.");
-                return false; // Prevent form submission
+            if (selectedDate < today) {
+                errorElement.style.display = "block";
+                submitButton.disabled = true;
+            } else {
+                errorElement.style.display = "none";
+                submitButton.disabled = false;
             }
-            return true; // Allow form submission
-        }
+        });
     </script>
 
 </body>
