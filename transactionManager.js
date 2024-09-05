@@ -1,3 +1,4 @@
+let { fileURLToPath } = require("url");
 
 function doesFileExistScriptable(fileName) {
     let fm = FileManager.iCloud();
@@ -54,17 +55,29 @@ function getCurrentDate() {
     return currentDate;
 }
 
-function isCurrentDatePastClosing(currentDate, closingDate) {
+function convertToDateObj(dateStr) {
     // Split string: 09-26-2024 by '-'
-    let parts = closingDate.split('-');
+    let parts = dateStr.split('-');
     // Declare new Date(year, month, day)
-    let closingDate = new Date(parts[2], (parts[0] - 1), parts[1]);
+    dateObj = new Date(parts[2], (parts[0] - 1), parts[1]);
+    return dateObj;
+}
+
+function isCurrentDatePastClosing(currentDate, closingDate) {
+    closingDate = convertToDateObj(closingDate);
     // Is today past the closing date?
     return currentDate > closingDate;
 }
 
 function isLeap(year) {
     return (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0)
+}
+
+function convertToDateString(dateObj) {
+    let year = dateObj.getFullYear();
+    let month = (dateObj.getMonth() + 1).toString().padStart(2, '0');
+    let day = dateObj.getDate().toString().padStart(2, '0');
+    return `${month}-${day}-${year}`;
 }
 
 function getNextClosingDate(date) {
@@ -82,8 +95,18 @@ function getNextClosingDate(date) {
         "11": 30,
         "12": 31
     }
-
-
+    closingDate = convertToDateObj(date);
+    month = (closingDate.getMonth() + 1).toString();
+    year = (closingDate.getFullYear());
+    if (month == 2) {
+        daysInMonth[month] = isLeap(year) ? 29 : 28;
+        closingDate.setDate(closingDate + daysInMonth[month]);
+        return convertToDateString(closingDate);
+    }
+    else {
+        closingDate.setDate(closingDate + daysInMonth[month]);
+        return convertToDateString(closingDate);
+    }
 }
 
 function updateClosingDateScriptable(closingDate, filePath) {
@@ -114,14 +137,61 @@ function getFilePath(fileName) {
     return fm.documentsDirectory() + `/${fileName}`;
 }
 
+function updateFileNode(filePath, key, newValue) {
+    let fs = require("fs");
+    let content = fs.readFileSync(filePath, "utf-8");
+    try {
+        let jsonData = JSON.parse(content);
+        if (key in jsonData) {
+            jsonData[key] = newValue;
+            let updatedContent = JSON.stringify(jsonData, null, 2);
+            fs.writeFileSync(filePath, updatedContent, "utf-8");
+            console.log(`${key} key in file updated successfully.`);
+        }
+        else {
+            console.log(`${key} not found in the JSON object.`);
+        }
+    }
+    catch (error) {
+        console.log("Error parsing JSON data:", error);
+    }
+}
+
+function sumTransactions(filePath) {
+    let fs = require("fs");
+    let content = fs.readFileSync(filePath, "utf-8");
+    let transactions = content.split("\n");
+    let sum = 0;
+    for (let transaction of transactions) {
+        let value = parseFloat(transaction);
+        if (!isNaN()) {
+            sum += value;
+        }
+    }
+    return sum;
+}
+
+function getLastTransaction(filePath) {
+    let fs = require("fs");
+    let content = fs.readFileSync(filePath, "utf-8");
+    let transactions = content.split("\n");
+    return transactions[transactions.length - 1];
+}
+
 function main() {
     let configFile = "config.json";
     let transactionsFile = "transactions.txt";
-    let monthlyLimit = getMonthlyLimit(configFile);
     let closingDate = getClosingDate(configFile);
-    console.log(monthlyLimit);
-    console.log(closingDate);
-    console.log(typeof(closingDate));
+    let updatedClosing = updateClosingDateNode(closingDate, transactionsFile);
+    let totalSpent = sumTransactions(transactionsFile);
+    let recent = getLastTransaction(transactionsFile);
+
+    updateFileNode(configFile, "Closing Date", updatedClosing);
+    updateFileNode(configFile, "Total Spent", totalSpent);
+    updateFileNode(configFile, "Recent", recent);
+
+
+
 
 
 }
