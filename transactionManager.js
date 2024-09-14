@@ -100,11 +100,12 @@ function getNextClosingDate(date) {
     year = (closingDate.getFullYear());
     if (month == 2) {
         daysInMonth[month] = isLeap(year) ? 29 : 28;
-        closingDate.setDate(closingDate + daysInMonth[month]);
+        closingDate.setDate(closingDate.getDate() + daysInMonth[month]);
         return convertToDateString(closingDate);
     }
     else {
-        closingDate.setDate(closingDate + daysInMonth[month]);
+        closingDate.setDate(closingDate.getDate() + daysInMonth[month]);
+        console.log(closingDate);
         return convertToDateString(closingDate);
     }
 }
@@ -115,7 +116,6 @@ function updateClosingDateScriptable(closingDate, filePath) {
         return closingDate;
     }
     else {
-
         return getNextClosingDate(closingDate);
     }
 }
@@ -190,7 +190,9 @@ function main() {
     updateFileNode(configFile, "Total Spent", totalSpent);
     updateFileNode(configFile, "Recent", recent);
 
-
+    // TODO: The date function returns a string of NaN-NaN-NaN.
+    // Check the config.json file.
+    // Seek how to turn TODO markers red.
 
 
 
