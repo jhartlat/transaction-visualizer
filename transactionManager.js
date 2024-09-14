@@ -1,4 +1,3 @@
-let { fileURLToPath } = require("url");
 
 function doesFileExistScriptable(fileName) {
     let fm = FileManager.iCloud();
@@ -137,6 +136,27 @@ function getFilePath(fileName) {
     return fm.documentsDirectory() + `/${fileName}`;
 }
 
+function updateFileScriptable(filePath, key, newValue) {
+    let fm = FileManager.iCloud();
+    let content = fm.readString(filePath);
+    try {
+        let jsonData = JSON.parse(content);
+        if (key in jsonData) {
+            jsonData[key] = newValue;
+            let updatedContent = JSON.stringify(jsonData, null, 2);
+            fm.writeString(filePath, updatedContent);
+            console.log(`${key} key in file updated successfully.`);
+        }
+        else {
+            console.log(`${key} not found in the JSON object.`);
+        }
+    }
+    catch (error) {
+        console.log("Error parsing JSON data:", error);
+    }
+
+}
+
 function updateFileNode(filePath, key, newValue) {
     let fs = require("fs");
     let content = fs.readFileSync(filePath, "utf-8");
@@ -186,14 +206,13 @@ function main() {
     let totalSpent = sumTransactions(transactionsFile);
     let recent = getLastTransaction(transactionsFile);
 
-    updateFileNode(configFile, "Closing Date", updatedClosing);
-    updateFileNode(configFile, "Total Spent", totalSpent);
-    updateFileNode(configFile, "Recent", recent);
+    // updateFileNode(configFile, "Closing Date", updatedClosing);
+    // updateFileNode(configFile, "Total Spent", totalSpent);
+    // updateFileNode(configFile, "Recent", recent);
 
-    // TODO: The date function returns a string of NaN-NaN-NaN.
-    // Check the config.json file.
-    // Seek how to turn TODO markers red.
-
+    updateFileScriptable(configFile, "Closing Date", updatedClosing);
+    updateFileScriptable(configFile, "Total Spent", totalSpent);
+    updateFileScriptable(configFile, "Recent", recent);
 
 
 }
