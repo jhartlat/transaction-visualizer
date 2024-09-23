@@ -9,9 +9,9 @@ function createWidget(closingDate, balance, checkingBill, savingsBill, recent) {
     mainColumn.layoutVertically();
 
     addRow1(mainColumn);
-    addRow2(mainColumn);
-    addRow3(mainColumn);
-    addRow4(mainColumn);
+    addRow2(mainColumn, balance);
+    addRow3(mainColumn, checkingBill, savingsBill);
+    addRow4(mainColumn, recent);
 
     return widget;
   }
@@ -30,81 +30,58 @@ function createWidget(closingDate, balance, checkingBill, savingsBill, recent) {
     return FM.documentsDirectory() + `/${fileName}`;
   }
 
+  function getCurrentDate() {
+    const currentDate = new Date();
+    return currentDate;
+}
 
-  function addRow1(mainColumn) {
+  function addRow1(mainColumn, closingDate) {
+    const numberOfDays = daysBetweenDates(getCurrentDate(), closingDate);
     const row1 = mainColumn.addStack();
-    const closingDate = row1.addText("Closing Date: 9/26");
-    closingDate.font = Font.boldSystemFont(14);
+
+    const daysText = numberOfDays === 1 ? "1 day left..." : `${numberOfDays} days left...`;
+    const closingDateText = row1.addText(daysText);
+    closingDateText.font = Font.boldSystemFont(14);
 
     row1.addSpacer();
 
-    const logo = row1.addText("💲");
+    const dollarSignEmoji = row1.addText("💲");
 
     mainColumn.addSpacer();
   }
 
 
-  function addRow2(mainColumn) {
+  function addRow2(mainColumn, balance) {
     const row2 = mainColumn.addStack();
-    const balance = row2.addText("$294.93");
-    balance.font = Font.systemFont(30);
+    const remainingBalance = row2.addText(`${balance}`);
+    remainingBalance.font = Font.boldSystemFont(28);
 
     row2.addSpacer();
     mainColumn.addSpacer();
   }
 
 
-  function addRow3(mainColumn) {
+  function addRow3(mainColumn, checkingBill, savingsBill) {
     const row3 = mainColumn.addStack();
-    const bill = row3.addText("SPLIT CHK: 555, SAV: 450");
-    bill.font = Font.systemFont(18)
+    const split = row3.addText(`(ALLOC) CHK: $${checkingBill}, SAV: $${savingsBill}`);
+    split.font = Font.boldSystemFont(14)
     row3.addSpacer();
     mainColumn.addSpacer();
   }
 
 
-  function addRow4(mainColumn) {
+  function addRow4(mainColumn, recent) {
     const row4 = mainColumn.addStack();
-    const recent = row4.addText("Recent: -$40.00");
-    recent.font = Font.systemFont(18);
+    const lastCharge = row4.addText(`Recent: -$${recent}`);
+    lastCharge.font = Font.boldSystemFont(14);
     row4.addSpacer();
     const lastUpdate = row4.addText(" 11:59 PM");
-    lastUpdate.font = Font.systemFont(18);
+    lastUpdate.font = Font.boldSystemFont(14);
     mainColumn.addSpacer();
   }
 
 
-//   function readFileFrom_iCloud(fileName) {
-//     const filePath = getFilePath(fileName);
-//     if (fm.fileExists(filePath)) {
-//       const content = fm.readString(filePath);
-//       return content;
-//     }
-//     else {
-//       console.log("File does not exist.");
-//     }
-//   }
-
-
-
-//   function stringToJSON(content) {
-//     try {
-//       const modifiedContent = content.replace(/'/g,'"');
-//       const result = JSON.parse(modifiedContent);
-//       return result;
-//     }
-//     catch (error) {
-//       console.log("Failed to convert content to JSON", error);
-//     }
-//     return null;
-//   }
-
-
-  function allocateSpending(
-    totalSpent,
-    checkingBill,
-    savingsBill,
-    monthlyLimit) {
+  function allocateSpending(totalSpent, checkingBill, savingsBill, monthlyLimit) {
       if (checkingBill >= monthlyLimit) {
         checkingBill = monthlyLimit;
         savingsBill = totalSpent - monthlyLimit;
@@ -125,12 +102,34 @@ function createWidget(closingDate, balance, checkingBill, savingsBill, recent) {
   }
 
 
-//   function removeYearAndLeadingZero(dateString) {
-//     const parts = dateString.split('/');
-//     const month = parts[0].startsWith('0') ? parts[0].substring(1) : parts[0];
-//     const day = parts[1].startsWith('0') ? parts[1].substring(1) : parts[1];
-//     return month + '/' + day;
-//   }
+  function budgetProgressBar(widget, remainingBalance, monthlyLimit) {
+
+    let percentageFilled = 0;
+
+    if (remainingBalance > 0) {
+      percentageFilled = remainingBalance/monthlyLimit;
+    }
+
+    const drawingContext = new DrawContext();
+    drawingContext.size = new Size(300, 100);
+
+    const greenWidth = drawingContext.size.width * percentageFilled;
+    drawingContext.setFillColor(new Color("#007b03"));
+    drawingContext.fillRect(new Rect(0, 0, greenWidth, 100));
+
+    const grayWidth = drawingContext.size.width * (1 - percentageFilled);
+    drawingContext.setFillColor(new Color("#1C1C1E"));
+    drawingContext.fillRect(new Rect(greenWidth, 0, grayWidth, 100));
+
+    widget.backgroundImage = drawingContext.getImage();
+
+  }
+
+  function daysBetweenDates(date1, date2) {
+    const timeDifference = date2 - date1;
+    const days = timeDifference / (1000 * 60 * 60 * 24);
+    return days;
+  }
 
 
   function main() {
@@ -143,11 +142,7 @@ function createWidget(closingDate, balance, checkingBill, savingsBill, recent) {
     const monthlyLimit = jsonContent["Monthly Limit"];
     let checkingBill = totalSpent;
     let savingsBill = 0;
-    const transactionData = allocateSpending(
-      totalSpent,
-      checkingBill,
-      savingsBill,
-      monthlyLimit);
+    const transactionData = allocateSpending(totalSpent, checkingBill, savingsBill, monthlyLimit);
     const remainingBalance = transactionData[0];
     checkingBill = transactionData[1];
     savingsBill = transactionData[2];
@@ -156,13 +151,9 @@ function createWidget(closingDate, balance, checkingBill, savingsBill, recent) {
       \nRemaining Balance: ${remainingBalance}/$${monthlyLimit}\
       \nPay $${checkingBill} from Checking Account\
       \nPay $${savingsBill} from Savings Account`);
+    const widget = createWidget(closingDate, remainingBalance, checkingBill, savingsBill, recent);
+    budgetProgressBar(widget, remainingBalance, balance);
 
-
-    const widget = createWidget(
-      closingDate,
-      remainingBalance,
-      checkingBill,
-      savingsBill);
     showWidget(widget);
 
     Script.complete();
