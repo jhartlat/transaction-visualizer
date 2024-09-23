@@ -56,7 +56,11 @@ function createWidget(closingDate, balance, checkingBill, savingsBill, recent) {
 
   function addRow2(mainColumn, balance) {
     const row2 = mainColumn.addStack();
-    const remainingBalance = row2.addText(`${balance}`);
+    const formattedBalance = formatAmount(balance);
+    const remainingBalance = row2.addText(`${formattedBalance}`);
+    if (balance < 0.00) {
+      remainingBalance.Color.red();
+    }
     remainingBalance.font = Font.boldSystemFont(28);
 
     row2.addSpacer();
@@ -66,6 +70,7 @@ function createWidget(closingDate, balance, checkingBill, savingsBill, recent) {
 
   function addRow3(mainColumn, checkingBill, savingsBill) {
     const row3 = mainColumn.addStack();
+    // TODO: Color these individual
     const split = row3.addText(`(ALLOC) CHK: $${checkingBill}, SAV: $${savingsBill}`);
     split.font = Font.boldSystemFont(14)
     row3.addSpacer();
