@@ -30,13 +30,16 @@ function createWidget(closingDate, balance, checkingBill, savingsBill, recent) {
     return FM.documentsDirectory() + `/${fileName}`;
   }
 
-  function getCurrentDate() {
+  function getCurrentDateString() {
     const currentDate = new Date();
-    return currentDate;
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
+    const days = currentDate.days();
+    return `${month}-${days}-${year}`;
 }
 
   function addRow1(mainColumn, closingDate) {
-    const numberOfDays = daysBetweenDates(getCurrentDate(), closingDate);
+    const numberOfDays = daysBetweenDates(getCurrentDateString(), closingDate);
     const row1 = mainColumn.addStack();
 
     const daysText = numberOfDays === 1 ? "1 day left..." : `${numberOfDays} days left...`;
@@ -69,13 +72,22 @@ function createWidget(closingDate, balance, checkingBill, savingsBill, recent) {
     mainColumn.addSpacer();
   }
 
+  function getTime() {
+    const currentDate = new Date();
+    const hours = currentDate.getHours();
+    const minutes = currentDate.getMinutes();
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    return `${hours}:${minutes} ${ampm}`;
+  }
+
 
   function addRow4(mainColumn, recent) {
     const row4 = mainColumn.addStack();
     const lastCharge = row4.addText(`Recent: -$${recent}`);
     lastCharge.font = Font.boldSystemFont(14);
     row4.addSpacer();
-    const lastUpdate = row4.addText(" 11:59 PM");
+    const currentTime = getTime();
+    const lastUpdate = row4.addText(currentTime);
     lastUpdate.font = Font.boldSystemFont(14);
     mainColumn.addSpacer();
   }
@@ -126,6 +138,8 @@ function createWidget(closingDate, balance, checkingBill, savingsBill, recent) {
   }
 
   function daysBetweenDates(date1, date2) {
+    const date1 = new Date(currentDate);
+    const date2 = new Date(closingDate);
     const timeDifference = date2 - date1;
     const days = timeDifference / (1000 * 60 * 60 * 24);
     return days;
