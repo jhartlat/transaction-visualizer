@@ -1,181 +1,233 @@
 const FM = FileManager.iCloud();
-const CONFIG_FILE_PATH = getFilePath("config.json");
+const CONFIG_PATH = getFilePath("config.json");
+const STICKER_PATH = getFilePath("wallet-sticker.txt");
+const STYLE = {
+  font: {
+    daysLeft: Font.boldSystemFont(16),
+    balance: Font.boldSystemFont(28),
+    otherText: Font.boldSystemFont(14)
+  },
 
+  size: {
+    image: new Size(32, 32)
+  },
 
-function createWidget(closingDate, balance, checkingBill, savingsBill, recent) {
-    const widget = new ListWidget();
-
-    const mainColumn = widget.addStack();
-    mainColumn.layoutVertically();
-
-    addRow1(mainColumn);
-    addRow2(mainColumn, balance);
-    addRow3(mainColumn, checkingBill, savingsBill);
-    addRow4(mainColumn, recent);
-
-    return widget;
+  color: {
+    negativeBalance: new Color("#DD4500")
   }
+};
 
-
-  function showWidget(widget) {
-    if (config.runsInApp) {
-      widget.presentMedium();
-    } else if (config.runsInWidget) {
-      Script.setWidget(widget);
-    }
-  }
-
-
-  function getFilePath(fileName) {
-    return FM.documentsDirectory() + `/${fileName}`;
-  }
-
-  function getCurrentDateString() {
-    const currentDate = new Date();
-    const year = currentDate.getFullYear();
-    const month = currentDate.getMonth();
-    const days = currentDate.days();
-    return `${month}-${days}-${year}`;
+function getBalanceColor(balance) {
+  if (balance < 0.00) STYLE.color.negativeBalance;
 }
 
-  function addRow1(mainColumn, closingDate) {
-    const numberOfDays = daysBetweenDates(getCurrentDateString(), closingDate);
-    const row1 = mainColumn.addStack();
 
-    const daysText = numberOfDays === 1 ? "1 day left..." : `${numberOfDays} days left...`;
-    const closingDateText = row1.addText(daysText);
-    closingDateText.font = Font.boldSystemFont(14);
+function createWidget(closingDate, remainingBalance, deductFromChecking, deductFromSavings, recent) {
+  const widget = new ListWidget();
+  const mainColumn = widget.addStack();
+  mainColumn.layoutVertically();
+  addRow1(mainColumn, closingDate);
+  addRow2(mainColumn, remainingBalance);
+  addRow3(mainColumn, remainingBalance, deductFromChecking, deductFromSavings);
+  addRow4(mainColumn, recent);
+  return widget;
+}
 
-    row1.addSpacer();
 
-    const dollarSignEmoji = row1.addText("💲");
+function addRow1(mainColumn, closingDate) {
+  const currentDate = getCurrentDateString();
+  const numberOfDays = daysBetweenDates(currentDate, closingDate);
+  const row1 = mainColumn.addStack();
+  let daysLeft = "";
 
-    mainColumn.addSpacer();
+  if (numberOfDays === 1) {
+    daysLeft = "1 day left...";
+  }
+  else {
+    daysLeft = `${numberOfDays} days left...`;
   }
 
+  const daysLeftText = row1.addText(daysLeft);
+  daysLeftText.font = STYLE.font.daysLeft;
+  row1.addSpacer();
 
-  function addRow2(mainColumn, balance) {
-    const row2 = mainColumn.addStack();
-    const formattedBalance = formatAmount(balance);
-    const remainingBalance = row2.addText(`${formattedBalance}`);
-    if (balance < 0.00) {
-      remainingBalance.Color.red();
-    }
-    remainingBalance.font = Font.boldSystemFont(28);
+  const image = loadStickerImage();
+  const sticker = row1.addImage(image);
+  sticker.imageSize = STYLE.size.image;
+  mainColumn.addSpacer();
+}
 
-    row2.addSpacer();
-    mainColumn.addSpacer();
+
+function addRow2(mainColumn, remainingBalance) {
+  const row2 = mainColumn.addStack();
+  const formattedBalance = formatAmount(remainingBalance);
+  const balance = row2.addText(formattedBalance);
+  balance.textColor = getBalanceColor(remainingBalance);
+  balance.font = STYLE.font.balance;
+  row2.addSpacer();
+  mainColumn.addSpacer();
+}
+
+
+function addRow3(mainColumn, remainingBalance, deductFromChecking, deductFromSavings) {
+  const row3 = mainColumn.addStack();
+  const splitText1 = row3.addText(`(DEDUCT) CHK: $${deductFromChecking}`);
+  const splitText2 = row3.addText(` SAV: $${deductFromSavings}`);
+  splitText1.font = STYLE.font.otherText;
+  splitText2.font = STYLE.font.otherText;
+  splitText2.textColor = getBalanceColor(remainingBalance);
+  row3.addSpacer();
+  mainColumn.addSpacer();
+}
+
+
+function addRow4(mainColumn, recent) {
+  const row4 = mainColumn.addStack();
+  const amount = parseFloat(recent);
+  let lastCharge = row4.addText(`Last Charge: -$${recent}`);
+  if (amount == 0) {
+    lastCharge = row4.addText("Last Charge: N/A");
+  }
+  lastCharge.font = STYLE.font.otherText;
+  row4.addSpacer();
+  const currentTime = getTime();
+  const lastUpdate = row4.addText(currentTime);
+  lastUpdate.font = STYLE.font.otherText;
+  mainColumn.addSpacer();
+}
+
+
+
+function showWidget(widget) {
+  if (config.runsInApp) {
+    widget.presentMedium();
+  }
+  else if (config.runsInWidget) {
+    Script.setWidget(widget);
+  }
+}
+
+
+function getFilePath(fileName) {
+  return FM.documentsDirectory() + `/${fileName}`;
+}
+
+
+function getCurrentDateString() {
+  const currentDate = new Date();
+  const year = currentDate.getFullYear();
+  const month = currentDate.getMonth() + 1;
+  const day = currentDate.getDate();
+  return `${month}-${day}-${year}`;
+}
+
+
+function getTime() {
+  const currentDate = new Date();
+  let hours = currentDate.getHours();
+  const minutes = currentDate.getMinutes().toString().padStart(2, '0');
+  const ampm = hours >= 12 ? 'PM' : 'AM';
+  // Convert to 12-hour format.
+  hours = hours % 12;
+  // If hour is 0, display as 12.
+  hours = hours ? hours : 12;
+  return `${hours}:${minutes} ${ampm}`;
+}
+
+
+function formatAmount(amount) {
+  if (amount < 0.00) {
+    return `-$${Math.abs(amount).toFixed(2)}`;
+  }
+  else {
+    return `$${amount.toFixed(2)}`;
+  }
+}
+
+
+function budgetProgressBar(widget, remainingBalance, monthlyLimit) {
+  const balance = parseFloat(remainingBalance);
+  const limit = parseFloat(monthlyLimit);
+  let percentageFilled = 0;
+
+  if (balance > 0) {
+    percentageFilled = balance/limit;
   }
 
+  const background = new DrawContext();
+  background.size = new Size(300, 100);
 
-  function addRow3(mainColumn, checkingBill, savingsBill) {
-    const row3 = mainColumn.addStack();
-    // TODO: Color these individual
-    const split = row3.addText(`(ALLOC) CHK: $${checkingBill}, SAV: $${savingsBill}`);
-    split.font = Font.boldSystemFont(14)
-    row3.addSpacer();
-    mainColumn.addSpacer();
+  const greenWidth = background.size.width * percentageFilled;
+  background.setFillColor(new Color("#117711"));
+  background.fillRect(new Rect(0, 0, greenWidth, 100));
+
+  const grayWidth = background.size.width * (1 - percentageFilled);
+  background.setFillColor(new Color("#1C1C1C"));
+  background.fillRect(new Rect(greenWidth, 0, grayWidth, 100));
+
+  widget.backgroundImage = background.getImage();
+}
+
+
+function daysBetweenDates(currentDate, closingDate) {
+  let month, day, year = currentDate.split("-");
+  const date1 = new Date(year, parseInt(month) - 1, day);
+  let closingMonth, closingDay, closingYear = closingDate.split("-");
+  const date2 = new Date(closingYear, parseInt(closingMonth) - 1, closingDay);
+  const timeDifference = date2 - date1;
+  const days = Math.trunc(timeDifference / (1000 * 60 * 60 * 24));
+  return days;
+}
+
+
+function loadStickerImage() {
+  const base64String = FM.readString(STICKER_PATH);
+  return Image.fromData(Data.fromBase64String(base64String));
+}
+
+
+function allocateSpending(totalSpent, deductFromChecking, deductFromSavings, monthlyLimit) {
+  if (deductFromChecking >= monthlyLimit) {
+    deductFromChecking = monthlyLimit;
+    deductFromSavings = totalSpent - monthlyLimit;
   }
-
-  function getTime() {
-    const currentDate = new Date();
-    const hours = currentDate.getHours();
-    const minutes = currentDate.getMinutes();
-    const ampm = hours >= 12 ? 'PM' : 'AM';
-    return `${hours}:${minutes} ${ampm}`;
+  else {
+    deductFromChecking = totalSpent;
+    deductFromSavings = 0.00;
   }
+  const remainingremainingBalance = monthlyLimit - totalSpent;
+  return [remainingremainingBalance, deductFromChecking, deductFromSavings];
+}
 
 
-  function addRow4(mainColumn, recent) {
-    const row4 = mainColumn.addStack();
-    const lastCharge = row4.addText(`Recent: -$${recent}`);
-    lastCharge.font = Font.boldSystemFont(14);
-    row4.addSpacer();
-    const currentTime = getTime();
-    const lastUpdate = row4.addText(currentTime);
-    lastUpdate.font = Font.boldSystemFont(14);
-    mainColumn.addSpacer();
-  }
-
-
-  function allocateSpending(totalSpent, checkingBill, savingsBill, monthlyLimit) {
-      if (checkingBill >= monthlyLimit) {
-        checkingBill = monthlyLimit;
-        savingsBill = totalSpent - monthlyLimit;
-      }
-      else {
-        checkingBill = totalSpent;
-        savingsBill = 0;
-        savingsBill = savingsBill.toFixed(2);
-      }
-      const remainingBalance = formatAmount(monthlyLimit - totalSpent);
-
-      return [remainingBalance, checkingBill, savingsBill];
-  }
-
-
-  function formatAmount(amount) {
-    return (amount < 0.00 ? `-$${Math.abs(amount).toFixed(2)}` : `$${amount.toFixed(2)}`);
-  }
-
-
-  function budgetProgressBar(widget, remainingBalance, monthlyLimit) {
-
-    let percentageFilled = 0;
-
-    if (remainingBalance > 0) {
-      percentageFilled = remainingBalance/monthlyLimit;
-    }
-
-    const drawingContext = new DrawContext();
-    drawingContext.size = new Size(300, 100);
-
-    const greenWidth = drawingContext.size.width * percentageFilled;
-    drawingContext.setFillColor(new Color("#007b03"));
-    drawingContext.fillRect(new Rect(0, 0, greenWidth, 100));
-
-    const grayWidth = drawingContext.size.width * (1 - percentageFilled);
-    drawingContext.setFillColor(new Color("#1C1C1E"));
-    drawingContext.fillRect(new Rect(greenWidth, 0, grayWidth, 100));
-
-    widget.backgroundImage = drawingContext.getImage();
-
-  }
-
-  function daysBetweenDates(date1, date2) {
-    const date1 = new Date(currentDate);
-    const date2 = new Date(closingDate);
-    const timeDifference = date2 - date1;
-    const days = timeDifference / (1000 * 60 * 60 * 24);
-    return days;
-  }
-
-
-  function main() {
-    const content = FM.readString(CONFIG_FILE_PATH);
+function main() {
+    // Read the config file and parse its content.
+    const content = FM.readString(CONFIG_PATH);
     const jsonContent = JSON.parse(content);
-    console.log(`\nJSON Content:\n${content}`);
+
+    // Save each key from the parsed JSON into their respective variables.
     const totalSpent = jsonContent["Total Spent"];
     const closingDate = jsonContent["Closing Date"];
     const recent = jsonContent["Recent"];
     const monthlyLimit = jsonContent["Monthly Limit"];
-    let checkingBill = totalSpent;
-    let savingsBill = 0;
-    const transactionData = allocateSpending(totalSpent, checkingBill, savingsBill, monthlyLimit);
-    const remainingBalance = transactionData[0];
-    checkingBill = transactionData[1];
-    savingsBill = transactionData[2];
-    console.log(`\nTransaction Data:\
-      \nClosing Date: ${closingDate}\
-      \nRemaining Balance: ${remainingBalance}/$${monthlyLimit}\
-      \nPay $${checkingBill} from Checking Account\
-      \nPay $${savingsBill} from Savings Account`);
-    const widget = createWidget(closingDate, remainingBalance, checkingBill, savingsBill, recent);
-    budgetProgressBar(widget, remainingBalance, balance);
 
+    // Intitialize the starting deductions for both the checking and savings accounts.
+    let deductFromChecking = totalSpent;
+    let deductFromSavings = 0;
+
+    // Allocate the spending into the correct fields.
+    let remainingBalance, checking, savings
+    = allocateSpending(totalSpent, deductFromChecking, deductFromSavings, monthlyLimit);
+
+    // Create a widget to display all of the data.
+    const widget = createWidget(closingDate, remainingBalance, checking, savings, recent);
+
+    // Create a background that dynamically shows the progression of what has been spent.
+    budgetProgressBar(widget, remainingBalance, monthlyLimit);
+
+    // Display the widget.
     showWidget(widget);
-
     Script.complete();
-  }
+}
 
-  main();
+main();
