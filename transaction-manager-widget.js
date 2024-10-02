@@ -72,7 +72,7 @@ function addRow2(mainColumn, remainingBalance) {
 function addRow3(mainColumn, remainingBalance, deductFromChecking, deductFromSavings) {
   const row3 = mainColumn.addStack();
   const splitText1 = row3.addText(`(DEDUCT) CHK: $${deductFromChecking}`);
-  const splitText2 = row3.addText(` SAV: $${deductFromSavings}`);
+  const splitText2 = row3.addText(` SAV: $${deductFromSavings.toFixed(2)}`);
   splitText1.font = STYLE.font.otherText;
   splitText2.font = STYLE.font.otherText;
   splitText2.textColor = getBalanceColor(remainingBalance);
@@ -84,9 +84,12 @@ function addRow3(mainColumn, remainingBalance, deductFromChecking, deductFromSav
 function addRow4(mainColumn, recent) {
   const row4 = mainColumn.addStack();
   const amount = parseFloat(recent);
-  let lastCharge = row4.addText(`Last Charge: -$${recent}`);
+  let lastCharge;
   if (amount == 0) {
     lastCharge = row4.addText("Last Charge: N/A");
+  }
+  else {
+    lastCharge = row4.addText(`Last Charge: -$${recent}`);
   }
   lastCharge.font = STYLE.font.otherText;
   row4.addSpacer();
@@ -170,9 +173,9 @@ function budgetProgressBar(widget, remainingBalance, monthlyLimit) {
 
 
 function daysBetweenDates(currentDate, closingDate) {
-  let month, day, year = currentDate.split("-");
+  let [month, day, year] = currentDate.split("-");
   const date1 = new Date(year, parseInt(month) - 1, day);
-  let closingMonth, closingDay, closingYear = closingDate.split("-");
+  let [closingMonth, closingDay, closingYear] = closingDate.split("-");
   const date2 = new Date(closingYear, parseInt(closingMonth) - 1, closingDay);
   const timeDifference = date2 - date1;
   const days = Math.trunc(timeDifference / (1000 * 60 * 60 * 24));
