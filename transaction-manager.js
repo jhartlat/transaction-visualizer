@@ -176,7 +176,7 @@ function sumTransactions(filePath) {
 
 function getLastTransaction(filePath) {
     const content = FM.readString(filePath);
-    const transactions = content.split("\n");
+    const transactions = content.split("\n").filter(line => line.trim() !== '');
     return transactions[transactions.length - 1];
 }
 
