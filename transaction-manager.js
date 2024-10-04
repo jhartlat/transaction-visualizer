@@ -85,8 +85,47 @@ function updateClosingDate(closingDate) {
     if (!isCurrentDatePastClosing(currentDate, closingDate)) {
         return closingDate;
     }
+    logAllocationFile();
     resetTransactions(TX_FILE_PATH);
     return getNextClosingDate(closingDate);
+}
+
+
+function logAllocationFile() {
+    const totalSpent = Math.round(sumTransactions(TX_FILE_PATH) * 100) / 100;
+    let [deductFromChecking, deductFromSavings] = logSpending(totalSpent);
+    const directory = FM.documentsDirectory();
+    const filePath = FM.joinPath(directory, "transaction-manager-log.txt");
+    const content = `${closingDate}\n(PAY FROM) CHK: $${deductFromChecking} SAV: $${deductFromSavings.toFixed(2)}`;
+    FM.writeString(filePath, content);
+}
+
+function logSpending(totalSpent) {
+    const content = FM.readString(filePath);
+    try {
+        const jsonData = JSON.parse(content);
+        if (key in jsonData) {
+            let monthlyLimit = parseFloat(jsonData[key]);
+            let deductFromChecking = totalSpent;
+            let deductFromSavings = 0;
+
+            if (deductFromChecking >= monthlyLimit) {
+                deductFromChecking = monthlyLimit;
+                deductFromSavings = totalSpent - monthlyLimit;
+            }
+            else {
+                deductFromChecking = totalSpent;
+                deductFromSavings = 0.00;
+            }
+            return [deductFromChecking, deductFromSavings];
+        }
+        else {
+            console.log(`${key} not found in the JSON object.`);
+        }
+    }
+    catch (error) {
+        console.log("Error parsing JSON data:", error);
+    }
 }
 
 

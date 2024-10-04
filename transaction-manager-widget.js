@@ -71,7 +71,7 @@ function addRow2(mainColumn, remainingBalance) {
 
 function addRow3(mainColumn, remainingBalance, deductFromChecking, deductFromSavings) {
   const row3 = mainColumn.addStack();
-  const splitText1 = row3.addText(`(DEDUCT) CHK: $${deductFromChecking}`);
+  const splitText1 = row3.addText(`(PAY FROM) CHK: $${deductFromChecking}`);
   const splitText2 = row3.addText(` SAV: $${deductFromSavings.toFixed(2)}`);
   splitText1.font = STYLE.font.otherText;
   splitText2.font = STYLE.font.otherText;
@@ -165,7 +165,7 @@ function budgetProgressBar(widget, remainingBalance, monthlyLimit) {
   background.fillRect(new Rect(0, 0, greenWidth, 100));
 
   const grayWidth = background.size.width * (1 - percentageFilled);
-  background.setFillColor(new Color("#1C1C1C"));
+  background.setFillColor(new Color("#1E1E1E"));
   background.fillRect(new Rect(greenWidth, 0, grayWidth, 100));
 
   widget.backgroundImage = background.getImage();
@@ -198,8 +198,8 @@ function allocateSpending(totalSpent, deductFromChecking, deductFromSavings, mon
     deductFromChecking = totalSpent;
     deductFromSavings = 0.00;
   }
-  const remainingremainingBalance = monthlyLimit - totalSpent;
-  return [remainingremainingBalance, deductFromChecking, deductFromSavings];
+  const remainingBalance = monthlyLimit - totalSpent;
+  return [remainingBalance, deductFromChecking, deductFromSavings];
 }
 
 
@@ -219,7 +219,7 @@ function main() {
     let deductFromSavings = 0;
 
     // Allocate the spending into the correct fields.
-    let remainingBalance, checking, savings
+    let [remainingBalance, checking, savings]
     = allocateSpending(totalSpent, deductFromChecking, deductFromSavings, monthlyLimit);
 
     // Create a widget to display all of the data.
