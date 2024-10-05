@@ -85,27 +85,28 @@ function updateClosingDate(closingDate) {
     if (!isCurrentDatePastClosing(currentDate, closingDate)) {
         return closingDate;
     }
-    logAllocationFile();
+    logAllocationFile(closingDate);
     resetTransactions(TX_FILE_PATH);
     return getNextClosingDate(closingDate);
 }
 
 
-function logAllocationFile() {
+function logAllocationFile(closingDate) {
     const totalSpent = Math.round(sumTransactions(TX_FILE_PATH) * 100) / 100;
     let [deductFromChecking, deductFromSavings] = logSpending(totalSpent);
     const directory = FM.documentsDirectory();
-    const filePath = FM.joinPath(directory, "transaction-manager-log.txt");
+    const path = FM.joinPath(directory, "transaction-manager-log.txt");
     const content = `${closingDate}\n(PAY FROM) CHK: $${deductFromChecking} SAV: $${deductFromSavings.toFixed(2)}`;
-    FM.writeString(filePath, content);
+    FM.writeString(path, content);
 }
 
+
 function logSpending(totalSpent) {
-    const content = FM.readString(filePath);
+    const content = FM.readString(CONFIG_FILE_PATH);
     try {
         const jsonData = JSON.parse(content);
-        if (key in jsonData) {
-            let monthlyLimit = parseFloat(jsonData[key]);
+        if (LIMIT_KEY in jsonData) {
+            let monthlyLimit = parseFloat(jsonData[LIMIT_KEY]);
             let deductFromChecking = totalSpent;
             let deductFromSavings = 0;
 
