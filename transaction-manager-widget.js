@@ -7,11 +7,6 @@ const STYLE = {
     balance: Font.boldSystemFont(28),
     otherText: Font.boldSystemFont(14)
   },
-
-  size: {
-    image: new Size(32, 32)
-  },
-
   color: {
     negativeBalance: new Color("#DD4500")
   }
@@ -24,11 +19,18 @@ function getBalanceColor(balance) {
 }
 
 
-function createWidget(closingDate="10-10-2049", remainingBalance=750, deductFromChecking=250, deductFromSavings=0, recent="10.00") {
+function createWidget(
+  closingDate="10-10-2049",
+  remainingBalance=750,
+  deductFromChecking=250,
+  deductFromSavings=0,
+  recent="10.00",
+  title="My Credit Card")
+  {
   const widget = new ListWidget();
   const mainColumn = widget.addStack();
   mainColumn.layoutVertically();
-  addRow1(mainColumn, closingDate);
+  addRow1(mainColumn, closingDate, title);
   addRow2(mainColumn, remainingBalance);
   addRow3(mainColumn, remainingBalance, deductFromChecking, deductFromSavings);
   addRow4(mainColumn, recent);
@@ -36,30 +38,16 @@ function createWidget(closingDate="10-10-2049", remainingBalance=750, deductFrom
 }
 
 
-function addRow1(mainColumn, closingDate) {
+function addRow1(mainColumn, closingDate, title) {
   const currentDate = getCurrentDateString();
   const numberOfDays = daysBetweenDates(currentDate, closingDate);
   const row1 = mainColumn.addStack();
-  const cardName = row1.addText("American Express Gold Card");
+  const cardName = row1.addText(title);
   cardName.font = STYLE.font.daysLeft;
-
-
   row1.addSpacer();
-  let daysLeft = `${numberOfDays}📅`;
-
-  // if (numberOfDays === 1) {
-  //   daysLeft = "1 day left...";
-  // }
-  // else {
-  //   daysLeft = `${numberOfDays} days left...`;
-  // }
-
+  let daysLeft = `🗓️${numberOfDays}`;
   const daysLeftText = row1.addText(daysLeft);
   daysLeftText.font = STYLE.font.daysLeft;
-
-  // const image = loadStickerImage();
-  // const sticker = row1.addImage(image);
-  // sticker.imageSize = STYLE.size.image;
   mainColumn.addSpacer();
 }
 
@@ -189,12 +177,6 @@ function daysBetweenDates(currentDate, closingDate) {
 }
 
 
-function loadStickerImage() {
-  const base64String = FM.readString(STICKER_PATH);
-  return Image.fromData(Data.fromBase64String(base64String));
-}
-
-
 function allocateSpending(totalSpent, deductFromChecking, deductFromSavings, monthlyLimit) {
   if (deductFromChecking >= monthlyLimit) {
     deductFromChecking = monthlyLimit;
@@ -229,11 +211,12 @@ function main() {
     = allocateSpending(totalSpent, deductFromChecking, deductFromSavings, monthlyLimit);
 
     // Create a widget to display all of the data.
-    const widget = createWidget(closingDate, remainingBalance, checking, savings, recent);
+    const title = jsonContent["Card Name"];
+    const widget = createWidget(closingDate, remainingBalance, checking, savings, recent, title);
 
     // Create a background that dynamically shows the progression of what has been spent.
-    const color = "#995577";
-    budgetProgressBar(widget, remainingBalance, monthlyLimit, color);
+    const backgroundColor = jsonContent["Background"];
+    budgetProgressBar(widget, remainingBalance, monthlyLimit, backgroundColor);
 
     // Display the widget.
     showWidget(widget);
