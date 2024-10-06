@@ -24,6 +24,7 @@ function getCurrentDate() {
     return currentDate;
 }
 
+
 function convertToDateObj(dateStr) {
     const parts = dateStr.split("-");
     if (parts.length !== 3) {
@@ -211,5 +212,6 @@ function main() {
     }
 
 }
+
 
 main();

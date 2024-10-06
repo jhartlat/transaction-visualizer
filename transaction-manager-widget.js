@@ -93,7 +93,6 @@ function addRow4(mainColumn, recent) {
 }
 
 
-
 function showWidget(widget) {
   if (config.runsInApp) {
     widget.presentMedium();
@@ -220,5 +219,6 @@ function main() {
     showWidget(widget);
     Script.complete();
 }
+
 
 main();
