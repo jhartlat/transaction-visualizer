@@ -18,11 +18,13 @@ const STYLE = {
 };
 
 function getBalanceColor(balance) {
-  if (balance < 0.00) STYLE.color.negativeBalance;
+  if (balance < 0.00) {
+    return STYLE.color.negativeBalance;
+  }
 }
 
 
-function createWidget(closingDate, remainingBalance, deductFromChecking, deductFromSavings, recent) {
+function createWidget(closingDate="10-10-2049", remainingBalance=750, deductFromChecking=250, deductFromSavings=0, recent="10.00") {
   const widget = new ListWidget();
   const mainColumn = widget.addStack();
   mainColumn.layoutVertically();
@@ -38,22 +40,26 @@ function addRow1(mainColumn, closingDate) {
   const currentDate = getCurrentDateString();
   const numberOfDays = daysBetweenDates(currentDate, closingDate);
   const row1 = mainColumn.addStack();
-  let daysLeft = "";
+  const cardName = row1.addText("American Express Gold Card");
+  cardName.font = STYLE.font.daysLeft;
 
-  if (numberOfDays === 1) {
-    daysLeft = "1 day left...";
-  }
-  else {
-    daysLeft = `${numberOfDays} days left...`;
-  }
+
+  row1.addSpacer();
+  let daysLeft = `${numberOfDays}📅`;
+
+  // if (numberOfDays === 1) {
+  //   daysLeft = "1 day left...";
+  // }
+  // else {
+  //   daysLeft = `${numberOfDays} days left...`;
+  // }
 
   const daysLeftText = row1.addText(daysLeft);
   daysLeftText.font = STYLE.font.daysLeft;
-  row1.addSpacer();
 
-  const image = loadStickerImage();
-  const sticker = row1.addImage(image);
-  sticker.imageSize = STYLE.size.image;
+  // const image = loadStickerImage();
+  // const sticker = row1.addImage(image);
+  // sticker.imageSize = STYLE.size.image;
   mainColumn.addSpacer();
 }
 
@@ -148,7 +154,7 @@ function formatAmount(amount) {
 }
 
 
-function budgetProgressBar(widget, remainingBalance, monthlyLimit) {
+function budgetProgressBar(widget, remainingBalance, monthlyLimit, color="#117711") {
   const balance = parseFloat(remainingBalance);
   const limit = parseFloat(monthlyLimit);
   let percentageFilled = 0;
@@ -161,7 +167,7 @@ function budgetProgressBar(widget, remainingBalance, monthlyLimit) {
   background.size = new Size(300, 100);
 
   const greenWidth = background.size.width * percentageFilled;
-  background.setFillColor(new Color("#117711"));
+  background.setFillColor(new Color(color));
   background.fillRect(new Rect(0, 0, greenWidth, 100));
 
   const grayWidth = background.size.width * (1 - percentageFilled);
@@ -226,7 +232,8 @@ function main() {
     const widget = createWidget(closingDate, remainingBalance, checking, savings, recent);
 
     // Create a background that dynamically shows the progression of what has been spent.
-    budgetProgressBar(widget, remainingBalance, monthlyLimit);
+    const color = "#995577";
+    budgetProgressBar(widget, remainingBalance, monthlyLimit, color);
 
     // Display the widget.
     showWidget(widget);
