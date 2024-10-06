@@ -2,6 +2,8 @@ const CLOSING_KEY = "Closing Date";
 const TOTAL_KEY = "Total Spent";
 const RECENT_KEY = "Recent";
 const LIMIT_KEY = "Monthly Limit";
+const CARD_NAME_KEY = "Card Name";
+const BACKGROUND_KEY = "Background";
 const FM = FileManager.iCloud();
 const CONFIG_FILE_PATH = getFilePath("config.json");
 const TX_FILE_PATH = getFilePath("transactions.txt");
@@ -197,6 +199,12 @@ function main() {
 
         updateConfigFile(CONFIG_FILE_PATH, RECENT_KEY, recent);
         console.log(recent + "\n");
+
+        updateConfigFile(CONFIG_FILE_PATH, CARD_NAME_KEY, "Transaction Visualizer");
+
+        updateConfigFile(CONFIG_FILE_PATH, BACKGROUND_KEY, "#117711");
+
+
     }
     catch (error) {
         console.log("An error occurred in main: ", error);
