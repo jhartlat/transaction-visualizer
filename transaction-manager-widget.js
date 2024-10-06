@@ -1,6 +1,5 @@
 const FM = FileManager.iCloud();
 const CONFIG_PATH = getFilePath("config.json");
-const STICKER_PATH = getFilePath("wallet-sticker.txt");
 const STYLE = {
   font: {
     daysLeft: Font.boldSystemFont(16),
@@ -21,9 +20,9 @@ function getBalanceColor(balance) {
 
 function createWidget(
   closingDate="10-10-2049",
-  remainingBalance=750,
-  deductFromChecking=250,
-  deductFromSavings=0,
+  remainingBalance=750.00,
+  deductFromChecking=250.00,
+  deductFromSavings=0.00,
   recent="10.00",
   title="My Credit Card")
   {
@@ -65,7 +64,7 @@ function addRow2(mainColumn, remainingBalance) {
 
 function addRow3(mainColumn, remainingBalance, deductFromChecking, deductFromSavings) {
   const row3 = mainColumn.addStack();
-  const splitText1 = row3.addText(`(PAY FROM) CHK: $${deductFromChecking}`);
+  const splitText1 = row3.addText(`(PAY FROM) CHK: $${deductFromChecking.toFixed(2)}`);
   const splitText2 = row3.addText(` SAV: $${deductFromSavings.toFixed(2)}`);
   splitText1.font = STYLE.font.otherText;
   splitText2.font = STYLE.font.otherText;
@@ -197,18 +196,17 @@ function main() {
     const jsonContent = JSON.parse(content);
 
     // Save each key from the parsed JSON into their respective variables.
-    const totalSpent = jsonContent["Total Spent"];
+    const totalSpent = parseFloat(jsonContent["Total Spent"]);
     const closingDate = jsonContent["Closing Date"];
     const recent = jsonContent["Recent"];
-    const monthlyLimit = jsonContent["Monthly Limit"];
+    const monthlyLimit = parseFloat(jsonContent["Monthly Limit"]);
 
     // Intitialize the starting deductions for both the checking and savings accounts.
     let deductFromChecking = totalSpent;
     let deductFromSavings = 0;
 
     // Allocate the spending into the correct fields.
-    let [remainingBalance, checking, savings]
-    = allocateSpending(totalSpent, deductFromChecking, deductFromSavings, monthlyLimit);
+    let [remainingBalance, checking, savings] = allocateSpending(totalSpent, deductFromChecking, deductFromSavings, monthlyLimit);
 
     // Create a widget to display all of the data.
     const title = jsonContent["Card Name"];
