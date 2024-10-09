@@ -1,5 +1,9 @@
+// Variables used by Scriptable.
+// These must be at the very top of the file. Do not edit.
+// icon-color: yellow; icon-glyph: credit-card;
+
 const FM = FileManager.iCloud();
-const CONFIG_PATH = getFilePath("config.json");
+const CONFIG_PATH = getFilePath(`Transaction Visualizer/${Script.name()}/config.json`);
 const STYLE = {
   font: {
     daysLeft: Font.boldSystemFont(16),
@@ -191,6 +195,10 @@ function allocateSpending(totalSpent, deductFromChecking, deductFromSavings, mon
 
 function main() {
     // Read the config file and parse its content.
+if (!FM.fileExists(CONFIG_PATH)) {
+    throw new Error(`\nCheck the 'Card Name' value in the dictionary at the top of the:\n"${Script.name()}.shortcut"\nThe Card Name must match the shortcut name exactly, with no extra spaces.`);
+}
+
     const content = FM.readString(CONFIG_PATH);
     const jsonContent = JSON.parse(content);
 
