@@ -66,10 +66,10 @@ function addRow2(mainColumn, remainingBalance) {
 }
 
 
-function addRow3(mainColumn, remainingBalance, deductFromChecking, deductFromSavings) {
+function addRow3(mainColumn, remainingBalance, deductFromChecking, deductFromSavings, currencySymbol) {
   const row3 = mainColumn.addStack();
-  const splitText1 = row3.addText(`(PAY FROM) CHK: $${deductFromChecking.toFixed(2)}`);
-  const splitText2 = row3.addText(` SAV: $${deductFromSavings.toFixed(2)}`);
+  const splitText1 = row3.addText(`(PAY FROM) CHK: ${currencySymbol}${deductFromChecking.toFixed(2)}`);
+  const splitText2 = row3.addText(` SAV: ${currencySymbol}${deductFromSavings.toFixed(2)}`);
   splitText1.font = STYLE.font.otherText;
   splitText2.font = STYLE.font.otherText;
   splitText2.textColor = getBalanceColor(remainingBalance);
@@ -134,12 +134,12 @@ function getTime() {
 }
 
 
-function formatAmount(amount) {
+function formatAmount(amount, currencySymbol) {
   if (amount < 0.00) {
-    return `-$${Math.abs(amount).toFixed(2)}`;
+    return `-${currencySymbol}${Math.abs(amount).toFixed(2)}`;
   }
   else {
-    return `$${amount.toFixed(2)}`;
+    return `${currencySymbol}${amount.toFixed(2)}`;
   }
 }
 
@@ -207,6 +207,9 @@ if (!FM.fileExists(CONFIG_PATH)) {
     const closingDate = jsonContent["Closing Date"];
     const recent = jsonContent["Recent"];
     const monthlyLimit = parseFloat(jsonContent["Monthly Limit"]);
+    const currencySymbol = jsonContent["Symbol"];
+    const cardTag = jsonContent["Tag"];
+    const calendarEmoji = jsonContent["Emoji"];
 
     // Intitialize the starting deductions for both the checking and savings accounts.
     let deductFromChecking = totalSpent;
