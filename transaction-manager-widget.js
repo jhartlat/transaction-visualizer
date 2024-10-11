@@ -6,7 +6,7 @@ const FM = FileManager.iCloud();
 const CONFIG_PATH = getFilePath(`Transaction Visualizer/${Script.name()}/config.json`);
 const STYLE = {
   font: {
-    row1: Font.boldSystemFont(14),
+    row_1: Font.boldSystemFont(14),
     balance: Font.boldSystemFont(28),
     otherText: Font.boldSystemFont(14)
   },
@@ -34,52 +34,88 @@ function createWidget(
   const widget = new ListWidget();
   const mainColumn = widget.addStack();
   mainColumn.layoutVertically();
-  addRow1(mainColumn, closingDate, title, emoji);
-  addRow2(mainColumn, remainingBalance);
-  addRow3(mainColumn, remainingBalance, deductFromChecking, deductFromSavings);
+  addRow_1(mainColumn, closingDate, title, emoji);
+  addRow_2(mainColumn, remainingBalance);
+  addRow_3(mainColumn, remainingBalance, deductFromChecking, deductFromSavings);
   addRow4(mainColumn, recent);
   return widget;
 }
 
 
-function addRow1(mainColumn, title, closingDate, calendarEmoji) {
-  const row1 = mainColumn.addStack();
+function addRow_1(mainColumn, title, closingDate, calendarEmoji) {
+  const row_1 = mainColumn.addStack();
 
   // Card Name Label
-  const cardNameLabel = row1.addText(title);
-  cardName.font = STYLE.font.row1;
-  row1.addSpacer();
+  const cardNameLabel = row_1.addText(title);
+  cardName.font = STYLE.font.row_1;
+  row_1.addSpacer();
 
   // Days Left Label
   const currentDate = getCurrentDateString();
   const numberOfDays = daysBetweenDates(currentDate, closingDate);
-  const daysLeftLabel = row1.addText(`${calendarEmoji} ${numberOfDays}`);
-  daysLeftLabel.font = STYLE.font.row1;
+  const daysLeftLabel = row_1.addText(`${calendarEmoji} ${numberOfDays}`);
+  daysLeftLabel.font = STYLE.font.row_1;
 
   // End Row 1
   mainColumn.addSpacer();
 }
 
 
-function addRow2(mainColumn, remainingBalance) {
-  const row2 = mainColumn.addStack();
-  const formattedBalance = formatAmount(remainingBalance);
-  const balance = row2.addText(formattedBalance);
-  balance.textColor = getBalanceColor(remainingBalance);
-  balance.font = STYLE.font.balance;
-  row2.addSpacer();
+function addRow_2(mainColumn, remainingBalance, currency) {
+  const row_2 = mainColumn.addStack();
+
+  // Balance Label
+  let deviceLocale = navigator.language || 'en-US';
+  const formattedBalance = formatCurrency(remainingBalance, deviceLocale, currency);
+  const balanceLabel = row_2.addText(formattedBalance);
+  balanceLabel.textColor = getBalanceColor(remainingBalance);
+  balanceLabel.font = STYLE.font.balance;
+
+  // End Row 2
   mainColumn.addSpacer();
 }
 
 
-function addRow3(mainColumn, remainingBalance, deductFromChecking, deductFromSavings, currencySymbol) {
-  const row3 = mainColumn.addStack();
-  const splitText1 = row3.addText(`(PAY FROM) CHK: ${currencySymbol}${deductFromChecking.toFixed(2)}`);
-  const splitText2 = row3.addText(` SAV: ${currencySymbol}${deductFromSavings.toFixed(2)}`);
-  splitText1.font = STYLE.font.otherText;
-  splitText2.font = STYLE.font.otherText;
-  splitText2.textColor = getBalanceColor(remainingBalance);
-  row3.addSpacer();
+function addRow_3(mainColumn, cardTag, deductFromChecking, deductFromSavings) {
+  const row_3 = mainColumn.addStack();
+
+  // Card Tag Background
+  const cardTagBackground = row_3.addStack();
+  cardTagBackground.cornerRadius = 5;
+  cardTagBackground.setPadding(5, 10, 5, 10);
+  if (cardTag == 'CREDIT') {
+    cardTagBackground.backgroundColor = new Color("#000000");
+  } else {
+    cardTagBackground.backgroundColor = new Color("#43464B");
+  }
+
+  // Card Tag Label
+  const cardTagLabel = cardTagBackground.addText(`${cardTag}`);
+
+  // Checking Label
+  const checkingLabel = row_3.addStack();
+  checkingLabel.font = STYLE.font.row_3;
+  if (deductFromChecking > limit) {
+    checkingLabel.addText(`CHK: MAX`);
+    checkingLabel.textColor = STYLE.color.greyedOut;
+  } else {
+    let formattedChecking = formatCurrency(deductFromChecking, deviceLocale);
+    checkingLabel.addText(`CHK: ${formattedChecking}`);
+  }
+
+  // Savings Label
+  const savingsLabel = row_3.addStack();
+  savingsLabel.font = STYLE.font.row_3;
+  if (deductFromSavings < 0) {
+    savingsLabel.addText('SAV: ←');
+    savingsLabel.textColor = STYLE.color.greyedOut;
+  } else {
+    let formattedSavings = formatCurrency(deductFromsavings, deviceLocale);
+    savingsLabel.addText(`SAV: ${formattedSavings} `);
+    savingsLabel.textColor = STYLE.color.negativeBalance;
+  }
+
+  // End Row 3
   mainColumn.addSpacer();
 }
 
@@ -143,14 +179,20 @@ function getTime() {
 }
 
 
-function formatAmount(amount, currencySymbol) {
-  if (amount < 0.00) {
-    return `-${currencySymbol}${Math.abs(amount).toFixed(2)}`;
-  }
-  else {
-    return `${currencySymbol}${amount.toFixed(2)}`;
+/**
+ *@param {float} amount
+ *@param {string} currencySymbol
+ */
+
+function formatCurrency(amount, locale='en-US', currency='USD') {
+  if (amount < 0) {
+    return '-' + Math.abs(amount).toLocaleString(locale, {style: 'currency', currency: currency });
+  } else {
+    return amount.toLocaleString(locale, {style: 'currency', currency: currency });
   }
 }
+let output = formatCurrency(45000, 'MYR');
+console.log(output);
 
 
 function budgetProgressBar(widget, remainingBalance, monthlyLimit, color="#117711") {
@@ -216,7 +258,7 @@ if (!FM.fileExists(CONFIG_PATH)) {
     const closingDate = jsonContent["Closing Date"];
     const recent = jsonContent["Recent"];
     const monthlyLimit = parseFloat(jsonContent["Monthly Limit"]);
-    const currencySymbol = jsonContent["Symbol"];
+    const currencyCode = jsonContent["Symbol"];
     const cardTag = jsonContent["Tag"];
     const calendarEmoji = jsonContent["Emoji"];
 
