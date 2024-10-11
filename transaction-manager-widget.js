@@ -3,7 +3,7 @@
 // icon-color: yellow; icon-glyph: credit-card;
 
 const FM = FileManager.iCloud();
-const CONFIG_PATH = getFilePath(`Transaction Visualizer/${Script.name()}/config.json`);
+const CONFIG_PATH = getFilePath(`Transaction Visualizer/${args.widgetParameter()}/config.json`);
 const STYLE = {
   font: {
     row_1: Font.boldSystemFont(14),
@@ -56,7 +56,7 @@ function addRow_1(mainColumn, title, closingDate, calendarEmoji) {
   const daysLeftLabel = row_1.addText(`${calendarEmoji} ${numberOfDays}`);
   daysLeftLabel.font = STYLE.font.row_1;
 
-  // End Row 1
+  // Row 1 complete
   mainColumn.addSpacer();
 }
 
@@ -71,7 +71,7 @@ function addRow_2(mainColumn, remainingBalance, currency) {
   balanceLabel.textColor = getBalanceColor(remainingBalance);
   balanceLabel.font = STYLE.font.balance;
 
-  // End Row 2
+  // Row 2 complete
   mainColumn.addSpacer();
 }
 
@@ -115,29 +115,45 @@ function addRow_3(mainColumn, cardTag, deductFromChecking, deductFromSavings) {
     savingsLabel.textColor = STYLE.color.negativeBalance;
   }
 
-  // End Row 3
+  // Row 3 complete
   mainColumn.addSpacer();
 }
 
 
-function addRow4(mainColumn, recent) {
-  const row4 = mainColumn.addStack();
-  const amount = parseFloat(recent);
-  let lastCharge;
-  if (amount == 0) {
-    lastCharge = row4.addText("Recent Activity: N/A");
-  }
-  else if (amount > 0){
-    lastCharge = row4.addText(`Recent Activity: -${recent}`);
+function addRow4(mainColumn, lastActivity) {
+  const row_4 = mainColumn.addStack();
+
+  // Last Activity Label
+  const lastActivityLabel = row_4.addStack();
+  lastActivityLabel.addText("Last Activity: ");
+  lastActivityLabel.font = STYLE.font.row_4;
+  row_4.addSpacer();
+
+  // Activity Amount
+  const activityAmount = parseFloat(lastActivity);
+  let formattedAmount = null;
+  if (amount > 0) {
+    formattedAmount = formatCurrency((activityAmount * -1), deviceLocale);
+  } else if (amount == 0) {
+    formattedAmount = 'N/A';
   }
   else {
-    lastCharge = row4.addText(`Recent Activity: +${recent}`);
+    formattedAmount = '+' + formatCurrency((activityAmount), deviceLocale);
   }
-  lastCharge.font = STYLE.font.otherText;
-  row4.addSpacer();
+
+  // Amount Label
+  const amountLabel = row_4.addText(formattedAmount);
+  if (formattedAmount == 'N/A') {
+    amountLabel.textColor = STYLE.color.greyedOut;
+  }
+  row_4.addSpacer();
+
+  // Current Time Label
   const currentTime = getTime();
-  const lastUpdate = row4.addText(currentTime);
-  lastUpdate.font = STYLE.font.otherText;
+  const currentTimeLabel = row_4.addText(currentTime);
+  currentTimeLabel.font = STYLE.font.row_4;
+
+  // Row 4 complete
   mainColumn.addSpacer();
 }
 
@@ -185,14 +201,9 @@ function getTime() {
  */
 
 function formatCurrency(amount, locale='en-US', currency='USD') {
-  if (amount < 0) {
-    return '-' + Math.abs(amount).toLocaleString(locale, {style: 'currency', currency: currency });
-  } else {
-    return amount.toLocaleString(locale, {style: 'currency', currency: currency });
-  }
+  return amount.toLocaleString(locale, {style: 'currency', currency: currency });
 }
-let output = formatCurrency(45000, 'MYR');
-console.log(output);
+
 
 
 function budgetProgressBar(widget, remainingBalance, monthlyLimit, color="#117711") {
