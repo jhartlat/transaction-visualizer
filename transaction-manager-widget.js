@@ -6,7 +6,7 @@ const FM = FileManager.iCloud();
 const CONFIG_PATH = getFilePath(`Transaction Visualizer/${Script.name()}/config.json`);
 const STYLE = {
   font: {
-    daysLeft: Font.boldSystemFont(16),
+    row1: Font.boldSystemFont(14),
     balance: Font.boldSystemFont(28),
     otherText: Font.boldSystemFont(14)
   },
@@ -28,12 +28,13 @@ function createWidget(
   deductFromChecking=250.00,
   deductFromSavings=0.00,
   recent="10.00",
-  title="My Credit Card")
+  title="My Credit Card",
+  calendarEmoji="")
   {
   const widget = new ListWidget();
   const mainColumn = widget.addStack();
   mainColumn.layoutVertically();
-  addRow1(mainColumn, closingDate, title);
+  addRow1(mainColumn, closingDate, title, emoji);
   addRow2(mainColumn, remainingBalance);
   addRow3(mainColumn, remainingBalance, deductFromChecking, deductFromSavings);
   addRow4(mainColumn, recent);
@@ -41,16 +42,21 @@ function createWidget(
 }
 
 
-function addRow1(mainColumn, closingDate, title) {
+function addRow1(mainColumn, title, closingDate, calendarEmoji) {
+  const row1 = mainColumn.addStack();
+
+  // Card Name Label
+  const cardNameLabel = row1.addText(title);
+  cardName.font = STYLE.font.row1;
+  row1.addSpacer();
+
+  // Days Left Label
   const currentDate = getCurrentDateString();
   const numberOfDays = daysBetweenDates(currentDate, closingDate);
-  const row1 = mainColumn.addStack();
-  const cardName = row1.addText(title);
-  cardName.font = STYLE.font.daysLeft;
-  row1.addSpacer();
-  let daysLeft = `🗓️${numberOfDays}`;
-  const daysLeftText = row1.addText(daysLeft);
-  daysLeftText.font = STYLE.font.daysLeft;
+  const daysLeftLabel = row1.addText(`${calendarEmoji} ${numberOfDays}`);
+  daysLeftLabel.font = STYLE.font.row1;
+
+  // End Row 1
   mainColumn.addSpacer();
 }
 
@@ -83,10 +89,13 @@ function addRow4(mainColumn, recent) {
   const amount = parseFloat(recent);
   let lastCharge;
   if (amount == 0) {
-    lastCharge = row4.addText("Last Charge: N/A");
+    lastCharge = row4.addText("Recent Activity: N/A");
+  }
+  else if (amount > 0){
+    lastCharge = row4.addText(`Recent Activity: -${recent}`);
   }
   else {
-    lastCharge = row4.addText(`Last Charge: -$${recent}`);
+    lastCharge = row4.addText(`Recent Activity: +${recent}`);
   }
   lastCharge.font = STYLE.font.otherText;
   row4.addSpacer();
@@ -220,7 +229,7 @@ if (!FM.fileExists(CONFIG_PATH)) {
 
     // Create a widget to display all of the data.
     const title = jsonContent["Card Name"];
-    const widget = createWidget(closingDate, remainingBalance, checking, savings, recent, title);
+    const widget = createWidget(closingDate, remainingBalance, checking, savings, recent, title, calendarEmoji);
 
     // Create a background that dynamically shows the progression of what has been spent.
     const backgroundColor = jsonContent["Background"];
