@@ -2,13 +2,97 @@
 // These must be at the very top of the file. Do not edit.
 // icon-color: yellow; icon-glyph: credit-card;
 
-const FM = FileManager.iCloud();
-const CONFIG_PATH = getFilePath(`Transaction Visualizer/${args.widgetParameter()}/config.json`);
+let CARD_NAME;
+let BACKGROUND_COLOR;
+let TOTAL_SPENT;
+let MONTHLY_LIMIT;
+let RECENT;
+let CURRENCY_CODE;
+let CARD_TYPE;
+let CLOSING_DATE;
+let EMOJI;
+
+const configPath = "Transaction Visualizer/SAPPHIRE PREFERRED/config.json";
+const configData = readConfigFile(configPath);
+if (configData) {
+  const {
+    "Card Name": cardName,
+    "Background Color": backgroundColor,
+    "Total Spent": totalSpent,
+    "Monthly Limit": monthlyLimit,
+    "Recent": recent,
+    "Currency Code": currencyCode,
+    "Card Type": cardType,
+    "Closing Date": closingDate,
+    "emoji": emoji
+  } = configData;
+
+  CARD_NAME = cardName || "SAPPHIRE PREFERRED";
+  BACKGROUND_COLOR = backgroundColor || "#0F52BA";
+  TOTAL_SPENT = parseFloat(totalSpent) || 0;
+  MONTHLY_LIMIT = parseFloat(monthlyLimit) || 0;
+  RECENT = parseFloat(recent) || "N/A";
+  CURRENCY_CODE = currencyCode || "USD";
+  CARD_TYPE = cardType || "CREDIT";
+  CLOSING_DATE = closingDate || "11-09-2024";
+  EMOJI = emoji || "🗓️";
+
+}
+
+
+
+
+
+/**
+ * Loads the card configuration from the specified path.
+ *
+ * @param {string} cardConfigPath - The path to the configuration file.
+ * @returns {JSON} The configuration as a JSON object.
+ */
+function readConfigFile(configPath) {
+  const fm = FileManager.iCloud();
+  const directory = fm.documentsDirectory();
+  const filePath = fm.joinPath(directory, configPath);
+
+  if (!fm.fileExists(filePath)) {
+    console.log(`File not found: ${filePath}`);
+    return null;
+  }
+
+  const content = fm.readString(filePath);
+  if (!content) {
+    console.log(`Unable to read file: ${filePath}`)
+    return null;
+  }
+
+  try {
+    return JSON.parse(content);
+  } catch (error) {
+    console.log(`Error parsing JSON: ${error}`);
+    return null;
+  }
+}
+
+
+
+
+
+
+// Save each key from the parsed JSON into their respective variables.
+const totalSpent = parseFloat(jsonContent["Total Spent"]);
+const closingDate = jsonContent["Closing Date"];
+const recent = jsonContent["Recent"];
+const monthlyLimit = parseFloat(jsonContent["Monthly Limit"]);
+const currencyCode = jsonContent["Symbol"];
+const cardTag = jsonContent["Tag"];
+const calendarEmoji = jsonContent["Emoji"];
+let deviceLocale = Device.language() || 'en-US';
 const STYLE = {
   font: {
     row_1: Font.boldSystemFont(14),
-    balance: Font.boldSystemFont(28),
-    otherText: Font.boldSystemFont(14)
+    row_2: Font.boldSystemFont(28),
+    row_3: Font.boldSystemFont(13),
+    row_4: Font.boldSystemFont(13),
   },
   color: {
     negativeBalance: new Color("#DD4500")
@@ -34,7 +118,7 @@ function createWidget(
   const widget = new ListWidget();
   const mainColumn = widget.addStack();
   mainColumn.layoutVertically();
-  addRow_1(mainColumn, closingDate, title, emoji);
+  addRow_1(mainColumn, closingDate, title, CalendarEmoji);
   addRow_2(mainColumn, remainingBalance);
   addRow_3(mainColumn, remainingBalance, deductFromChecking, deductFromSavings);
   addRow4(mainColumn, recent);
@@ -47,7 +131,7 @@ function addRow_1(mainColumn, title, closingDate, calendarEmoji) {
 
   // Card Name Label
   const cardNameLabel = row_1.addText(title);
-  cardName.font = STYLE.font.row_1;
+  cardNameLabel.font = STYLE.font.row_1;
   row_1.addSpacer();
 
   // Days Left Label
@@ -65,11 +149,11 @@ function addRow_2(mainColumn, remainingBalance, currency) {
   const row_2 = mainColumn.addStack();
 
   // Balance Label
-  let deviceLocale = navigator.language || 'en-US';
+
   const formattedBalance = formatCurrency(remainingBalance, deviceLocale, currency);
   const balanceLabel = row_2.addText(formattedBalance);
   balanceLabel.textColor = getBalanceColor(remainingBalance);
-  balanceLabel.font = STYLE.font.balance;
+  balanceLabel.font = STYLE.font.row_2;
 
   // Row 2 complete
   mainColumn.addSpacer();
@@ -95,7 +179,7 @@ function addRow_3(mainColumn, cardTag, deductFromChecking, deductFromSavings) {
   // Checking Label
   const checkingLabel = row_3.addStack();
   checkingLabel.font = STYLE.font.row_3;
-  if (deductFromChecking > limit) {
+  if (deductFromChecking > monthlyLimit) {
     checkingLabel.addText(`CHK: MAX`);
     checkingLabel.textColor = STYLE.color.greyedOut;
   } else {
@@ -110,7 +194,7 @@ function addRow_3(mainColumn, cardTag, deductFromChecking, deductFromSavings) {
     savingsLabel.addText('SAV: ←');
     savingsLabel.textColor = STYLE.color.greyedOut;
   } else {
-    let formattedSavings = formatCurrency(deductFromsavings, deviceLocale);
+    let formattedSavings = formatCurrency(deductFromSavings, deviceLocale);
     savingsLabel.addText(`SAV: ${formattedSavings} `);
     savingsLabel.textColor = STYLE.color.negativeBalance;
   }
@@ -132,9 +216,9 @@ function addRow4(mainColumn, lastActivity) {
   // Activity Amount
   const activityAmount = parseFloat(lastActivity);
   let formattedAmount = null;
-  if (amount > 0) {
+  if (activityAmount > 0) {
     formattedAmount = formatCurrency((activityAmount * -1), deviceLocale);
-  } else if (amount == 0) {
+  } else if (activityAmount == 0) {
     formattedAmount = 'N/A';
   }
   else {
