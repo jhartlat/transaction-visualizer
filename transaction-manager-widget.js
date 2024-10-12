@@ -12,6 +12,8 @@ let CARD_TYPE;
 let CLOSING_DATE;
 let EMOJI;
 const DEVICE_LOCALE = Device.language() || 'en-US';
+const FM = FileManager.iCloud();
+const DIRECTORY = FM.documentsDirectory();
 const STYLE = {
   font: {
     row_1: Font.boldSystemFont(14),
@@ -25,8 +27,43 @@ const STYLE = {
 
   }
 };
-const CONFIG_PATH = "Transaction Visualizer/SAPPHIRE PREFERRED/config.json";
-const CONFIG_DATA = readConfigFile(CONFIG_PATH);
+
+// Get the widget parameter and trim trailing spaces
+let PARAM = args.widgetParameter ? args.widgetParameter.trimEnd() : null;
+
+// Check if running in the app
+if (config.runsInApp) {
+  let widget = new ListWidget();
+  widget.addText("This script only runs in a widget.\nAdd one to the home screen.");
+  widget.presentMedium();
+  Script.complete();
+  return;
+}
+
+// Check if a valid parameter is provided
+if (!PARAM) {
+  let widget = new ListWidget();
+  widget.addText("Please long press this widget.\n2. Edit Widget\n3. Provide an existing 'Card Name' for the parameter.");
+  Script.setWidget(widget);
+  widget.presentMedium();
+  Script.complete();
+  return;
+}
+
+const CONFIG_PATH = `Transaction Visualizer/${PARAM}/config.json`;
+let FILE_PATH = FM.joinPath(DIRECTORY, CONFIG_PATH);
+
+// Check if the file exists
+if (!FM.fileExists(FILE_PATH)) {
+  let widget = new ListWidget();
+  widget.addText("This 'Card Name' parameter either does not exist, is misspelled, or has incorrect casing.");
+  Script.setWidget(widget);
+  widget.presentMedium();
+  Script.complete();
+  return;
+}
+
+const CONFIG_DATA = readConfigFile();
 if (CONFIG_DATA) {
   const {
     "Card Name": cardName,
@@ -46,7 +83,7 @@ if (CONFIG_DATA) {
   MONTHLY_LIMIT = parseFloat(monthlyLimit) || 0;
   RECENT = parseFloat(recent) || "N/A";
   CURRENCY_CODE = currencyCode || "USD";
-  CARD_TYPE = cardType.toUpperCase() || "CREDIT";
+  CARD_TYPE = cardType || "CREDIT";
   CLOSING_DATE = closingDate || "11-09-2024";
   EMOJI = emoji || "🗓️";
 }
@@ -109,17 +146,17 @@ function addRow_4(mainColumn) {
   // Last Activity Label
   const lastActivityLabel = row_4.addText("Last Activity: ");
   lastActivityLabel.font = STYLE.font.row_4;
-  row_4.addSpacer();
+
 
   // Activity Amount
   let formattedAmount = RECENT;
 
-  if (typeof(RECENT) == "float") {
+  if (typeof(RECENT) == "number") {
 
     if (RECENT > 0) {
-      formattedAmount = formatCurrency((RECENT * -1), DEVICE_LOCALE);
+      formattedAmount = '-' + formatCurrency(RECENT, DEVICE_LOCALE, CURRENCY_CODE);
     } else {
-      formattedAmount = '+' + formatCurrency(RECENT, DEVICE_LOCALE);
+      formattedAmount = '+' + formatCurrency((RECENT* -1), DEVICE_LOCALE, CURRENCY_CODE);
     }
   }
 
@@ -128,6 +165,7 @@ function addRow_4(mainColumn) {
   if (formattedAmount == 'N/A') {
     amountLabel.textColor = STYLE.color.greyedOut;
   }
+  amountLabel.font = STYLE.font.row_4
   row_4.addSpacer();
 
   // Current Time Label
@@ -164,28 +202,34 @@ function addRow_3(mainColumn) {
     cardTypeBackground.backgroundColor = new Color("#43464B");
   }
 
+  // Alignment Stack
+  const alignmentStack = row_3.addStack();
+  alignmentStack.setPadding(5, 10, 5, 10);
+
+
   // Card Type Label
   const cardTypeLabel = cardTypeBackground.addText(`${CARD_TYPE}`);
+  cardTypeLabel.font = STYLE.font.row_3;
 
   // Checking Label
   let checkingLabel;
   if (CHECKING_ACCOUNT > MONTHLY_LIMIT) {
-    checkingLabel = row_3.addText(`CHK: MAX`);
+    checkingLabel = alignmentStack.addText(`CHK: MAX `);
     checkingLabel.textColor = STYLE.color.greyedOut;
   } else {
-    let formattedChecking = formatCurrency(CHECKING_ACCOUNT, DEVICE_LOCALE);
-    checkingLabel.addText(`CHK: ${formattedChecking}`);
+    let formattedChecking = formatCurrency(CHECKING_ACCOUNT, DEVICE_LOCALE, CURRENCY_CODE);
+    checkingLabel = alignmentStack.addText(`CHK: ${formattedChecking} `);
   }
   checkingLabel.font = STYLE.font.row_3;
 
   // Savings Label
   let savingsLabel;
   if (SAVINGS_ACCOUNT == 0) {
-    savingsLabel = row_3.addText('SAV: ←');
+    savingsLabel = alignmentStack.addText('SAV: ←');
     savingsLabel.textColor = STYLE.color.greyedOut;
   } else {
-    let formattedSavings = formatCurrency(SAVINGS_ACCOUNT, DEVICE_LOCALE);
-    savingsLabel.addText(`SAV: ${formattedSavings}`);
+    let formattedSavings = formatCurrency(SAVINGS_ACCOUNT, DEVICE_LOCALE, CURRENCY_CODE);
+    savingsLabel = alignmentStack.addText(`SAV: ${formattedSavings}`);
     savingsLabel.textColor = STYLE.color.negativeBalance;
   }
   savingsLabel.font = STYLE.font.row_3;
@@ -275,19 +319,10 @@ function allocateSpending() {
  * @param {string} cardConfigPath - The path to the configuration file.
  * @returns {JSON} The configuration as a JSON object.
  */
-function readConfigFile(configPath) {
-  const fm = FileManager.iCloud();
-  const directory = fm.documentsDirectory();
-  const filePath = fm.joinPath(directory, configPath);
-
-  if (!fm.fileExists(filePath)) {
-    console.log(`File not found: ${filePath}`);
-    return null;
-  }
-
-  const content = fm.readString(filePath);
+function readConfigFile() {
+  const content = FM.readString(FILE_PATH);
   if (!content) {
-    console.log(`Unable to read file: ${filePath}`)
+    console.log(`Unable to read file: ${FILE_PATH}`)
     return null;
   }
 
