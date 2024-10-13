@@ -12,8 +12,6 @@ let CARD_TYPE;
 let CLOSING_DATE;
 let EMOJI;
 const DEVICE_LOCALE = Device.language() || 'en-US';
-const FM = FileManager.iCloud();
-const DIRECTORY = FM.documentsDirectory();
 const STYLE = {
   font: {
     row_1: Font.boldSystemFont(14),
@@ -27,7 +25,6 @@ const STYLE = {
 
   }
 };
-
 // Get the widget parameter and trim trailing spaces
 let PARAM = args.widgetParameter ? args.widgetParameter.trimEnd() : null;
 
@@ -43,14 +40,19 @@ if (config.runsInApp) {
 // Check if a valid parameter is provided
 if (!PARAM) {
   let widget = new ListWidget();
-  widget.addText("Please long press this widget.\n2. Edit Widget\n3. Provide an existing 'Card Name' for the parameter.");
+  widget.addText("1. Please long press this widget.\n2. Edit Widget\n3. Provide an existing 'Card Name' for the parameter.");
   Script.setWidget(widget);
   widget.presentMedium();
   Script.complete();
   return;
 }
 
+// Construct the file path
 const CONFIG_PATH = `Transaction Visualizer/${PARAM}/config.json`;
+
+// File handling with iCloud
+let FM = FileManager.iCloud();
+let DIRECTORY = FM.documentsDirectory();
 let FILE_PATH = FM.joinPath(DIRECTORY, CONFIG_PATH);
 
 // Check if the file exists
@@ -60,9 +62,15 @@ if (!FM.fileExists(FILE_PATH)) {
   Script.setWidget(widget);
   widget.presentMedium();
   Script.complete();
-  return;
+  return;  
 }
 
+// If the file exists and all checks pass, show the card name
+let widget = new ListWidget();
+widget.addText(`Displaying information for card: ${PARAM}`);
+Script.setWidget(widget);
+widget.presentMedium();
+Script.complete();
 const CONFIG_DATA = readConfigFile();
 if (CONFIG_DATA) {
   const {
@@ -74,18 +82,18 @@ if (CONFIG_DATA) {
     "Currency Code": currencyCode,
     "Card Type": cardType,
     "Closing Date": closingDate,
-    "emoji": emoji
+    "Emoji": emoji
   } = CONFIG_DATA;
 
-  CARD_NAME = cardName || "SAPPHIRE PREFERRED";
-  BACKGROUND_COLOR = backgroundColor || "#0F52BA";
+  CARD_NAME = cardName.trimEnd() || "SAPPHIRE PREFERRED";
+  BACKGROUND_COLOR = backgroundColor.trimEnd() || "#0F52BA";
   TOTAL_SPENT = parseFloat(totalSpent) || 0;
   MONTHLY_LIMIT = parseFloat(monthlyLimit) || 0;
   RECENT = parseFloat(recent) || "N/A";
-  CURRENCY_CODE = currencyCode || "USD";
-  CARD_TYPE = cardType || "CREDIT";
-  CLOSING_DATE = closingDate || "11-09-2024";
-  EMOJI = emoji || "🗓️";
+  CURRENCY_CODE = currencyCode.trimEnd() || "USD";
+  CARD_TYPE = cardType.trimend() || "CREDIT";
+  CLOSING_DATE = closingDate.trimEnd() || "11-09-2024";
+  EMOJI = emoji.trimEnd() || "🗓️";
 }
 let CHECKING_ACCOUNT = TOTAL_SPENT;
 let SAVINGS_ACCOUNT = 0;
@@ -108,7 +116,7 @@ function showWidget(widget) {
 }
 
 function budgetProgressBar(widget, remainingBalance) {
-  let percentageFilled;
+  let percentageFilled = 0;
 
   if (remainingBalance > 0) {
     percentageFilled = remainingBalance/MONTHLY_LIMIT;
@@ -189,6 +197,23 @@ function getTime() {
   return `${hours}:${minutes} ${ampm}`;
 }
 
+function getComplementaryColor(hex) {
+  if (hex.charAt(0) === '#') {
+    hex = hex.slice(1);
+  }
+  let r = parseInt(hex.substring(0, 2), 16);
+  let g = parseInt(hex.substring(2, 4), 16);
+  let b = parseInt(hex.substring(4, 6), 16);
+
+  r = 255 - r;
+  g = 255 - g;
+  b = 255 - b;
+
+  let complementaryHex = `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).toUpperCase()}`
+
+  return complementaryHex
+}
+
 function addRow_3(mainColumn) {
   const row_3 = mainColumn.addStack();
 
@@ -199,7 +224,7 @@ function addRow_3(mainColumn) {
   if (CARD_TYPE == "CREDIT") {
     cardTypeBackground.backgroundColor = new Color("#000000");
   } else {
-    cardTypeBackground.backgroundColor = new Color("#43464B");
+    cardTypeBackground.backgroundColor = new Color(complementaryHex(BACKGROUND_COLOR));
   }
 
   // Alignment Stack
@@ -213,7 +238,7 @@ function addRow_3(mainColumn) {
 
   // Checking Label
   let checkingLabel;
-  if (CHECKING_ACCOUNT > MONTHLY_LIMIT) {
+  if (CHECKING_ACCOUNT == MONTHLY_LIMIT) {
     checkingLabel = alignmentStack.addText(`CHK: MAX `);
     checkingLabel.textColor = STYLE.color.greyedOut;
   } else {
@@ -238,7 +263,7 @@ function addRow_3(mainColumn) {
   mainColumn.addSpacer();
 }
 
-function addRow_2(mainColumn, remainingBalance, CURRENCY_CODE) {
+function addRow_2(mainColumn, remainingBalance) {
   const row_2 = mainColumn.addStack();
 
   // Balance Label

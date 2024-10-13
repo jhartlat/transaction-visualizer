@@ -3,7 +3,7 @@ const TOTAL_KEY = "Total Spent";
 const RECENT_KEY = "Recent";
 const LIMIT_KEY = "Monthly Limit";
 const CARD_NAME_KEY = "Card Name";
-const BACKGROUND_KEY = "Background";
+const BACKGROUND_KEY = "Background Color";
 const FM = FileManager.iCloud();
 const CONFIG_FILE_PATH = getFilePath("config.json");
 const TX_FILE_PATH = getFilePath("transactions.txt");
@@ -99,8 +99,10 @@ function logAllocationFile(closingDate) {
     let [deductFromChecking, deductFromSavings] = logSpending(totalSpent);
     const directory = FM.documentsDirectory();
     const path = FM.joinPath(directory, "transaction-manager-log.txt");
-    const content = `${closingDate}\n(PAY FROM) CHK: $${deductFromChecking} SAV: $${deductFromSavings.toFixed(2)}`;
-    FM.writeString(path, content);
+    let existingContent = fm.readString(filePath);
+    const newContent = `${closingDate}\nCHK: ${deductFromChecking} + SAV: ${deductFromSavings.toFixed(2)} = ${deductFromChecking + deductFromSavings.toFixed(2)}\n`;
+    let updatedContent = newContent + existingContent;
+    FM.writeString(path, updatedContent);
 }
 
 
