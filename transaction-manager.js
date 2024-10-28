@@ -2,11 +2,9 @@ const CLOSING_KEY = "Closing Date";
 const TOTAL_KEY = "Total Spent";
 const RECENT_KEY = "Recent";
 const LIMIT_KEY = "Monthly Limit";
-const CARD_NAME_KEY = "Card Name";
-const BACKGROUND_KEY = "Background Color";
 const FM = FileManager.iCloud();
-const CONFIG_FILE_PATH = getFilePath("config.json");
-const TX_FILE_PATH = getFilePath("transactions.txt");
+const CONFIG_FILE_PATH = getFilePath("Transaction Visualizer/Card Name/config.json");
+const TX_FILE_PATH = getFilePath("Transaction Visualizer/Card Name/transactions.txt");
 
 
 function readJsonValue(filePath, key) {
@@ -98,11 +96,14 @@ function logAllocationFile(closingDate) {
     const totalSpent = Math.round(sumTransactions(TX_FILE_PATH) * 100) / 100;
     let [deductFromChecking, deductFromSavings] = logSpending(totalSpent);
     const directory = FM.documentsDirectory();
-    const path = FM.joinPath(directory, "transaction-manager-log.txt");
-    let existingContent = fm.readString(filePath);
-    const newContent = `${closingDate}\nCHK: ${deductFromChecking} + SAV: ${deductFromSavings.toFixed(2)} = ${deductFromChecking + deductFromSavings.toFixed(2)}\n`;
-    let updatedContent = newContent + existingContent;
-    FM.writeString(path, updatedContent);
+    const path = FM.joinPath(directory, "Transaction Visualizer/Card Name/Log Name");
+    let existingContent = FM.readString(path);
+let total = deductFromChecking + deductFromSavings;
+    const newContent = `${closingDate}\nCHK: ${deductFromChecking.toFixed(2)} + SAV: ${deductFromSavings.toFixed(2)} = ${total.toFixed(2)}\n`;
+FM.writeString(path, newContent);
+
+
+
 }
 
 
@@ -171,7 +172,9 @@ function sumTransactions(filePath) {
     const transactions = content.split("\n");
     let sum = 0;
     for (const transaction of transactions) {
-        const value = parseFloat(transaction);
+        // Remove commas before parsing the number
+        const cleanedTransaction = transaction.replace(/,/g, '');
+        const value = parseFloat(cleanedTransaction);
         if (!isNaN(value)) {
             sum += value;
         }
@@ -203,11 +206,6 @@ function main() {
         updateConfigFile(CONFIG_FILE_PATH, RECENT_KEY, recent);
         console.log(recent + "\n");
 
-        updateConfigFile(CONFIG_FILE_PATH, CARD_NAME_KEY, "Transaction Visualizer");
-
-        updateConfigFile(CONFIG_FILE_PATH, BACKGROUND_KEY, "#117711");
-
-
     }
     catch (error) {
         console.log("An error occurred in main: ", error);
@@ -217,3 +215,6 @@ function main() {
 
 
 main();
+
+Script.complete();
+

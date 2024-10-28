@@ -1,7 +1,4 @@
-// Variables used by Scriptable.
-// These must be at the very top of the file. Do not edit.
-// icon-color: yellow; icon-glyph: credit-card;
-
+let DECLINE_BACKGROUND = true;
 let CARD_NAME;
 let BACKGROUND_COLOR;
 let TOTAL_SPENT;
@@ -11,10 +8,10 @@ let CURRENCY_CODE;
 let CARD_TYPE;
 let CLOSING_DATE;
 let EMOJI;
-const DEVICE_LOCALE = Device.language() || 'en-US';
+const DEVICE_LOCALE = Device.locale().replace('_', '-') || 'en-US';
 const STYLE = {
   font: {
-    row_1: Font.boldSystemFont(14),
+    row_1: Font.boldSystemFont(15),
     row_2: Font.boldSystemFont(26),
     row_3: Font.boldSystemFont(13),
     row_4: Font.boldSystemFont(13),
@@ -28,15 +25,6 @@ const STYLE = {
 // Get the widget parameter and trim trailing spaces
 let PARAM = args.widgetParameter ? args.widgetParameter.trimEnd() : null;
 
-// Check if running in the app
-if (config.runsInApp) {
-  let widget = new ListWidget();
-  widget.addText("This script only runs in a widget.\nAdd one to the home screen.");
-  widget.presentMedium();
-  Script.complete();
-  return;
-}
-
 // Check if a valid parameter is provided
 if (!PARAM) {
   let widget = new ListWidget();
@@ -47,30 +35,25 @@ if (!PARAM) {
   return;
 }
 
+
 // Construct the file path
 const CONFIG_PATH = `Transaction Visualizer/${PARAM}/config.json`;
 
 // File handling with iCloud
 let FM = FileManager.iCloud();
 let DIRECTORY = FM.documentsDirectory();
-let FILE_PATH = FM.joinPath(DIRECTORY, CONFIG_PATH);
 
 // Check if the file exists
+let FILE_PATH = FM.joinPath(DIRECTORY, CONFIG_PATH);
 if (!FM.fileExists(FILE_PATH)) {
   let widget = new ListWidget();
   widget.addText("This 'Card Name' parameter either does not exist, is misspelled, or has incorrect casing.");
   Script.setWidget(widget);
   widget.presentMedium();
   Script.complete();
-  return;  
+  return;
 }
 
-// If the file exists and all checks pass, show the card name
-let widget = new ListWidget();
-widget.addText(`Displaying information for card: ${PARAM}`);
-Script.setWidget(widget);
-widget.presentMedium();
-Script.complete();
 const CONFIG_DATA = readConfigFile();
 if (CONFIG_DATA) {
   const {
@@ -85,16 +68,17 @@ if (CONFIG_DATA) {
     "Emoji": emoji
   } = CONFIG_DATA;
 
-  CARD_NAME = cardName.trimEnd() || "SAPPHIRE PREFERRED";
-  BACKGROUND_COLOR = backgroundColor.trimEnd() || "#0F52BA";
+  CARD_NAME = cardName || "SAPPHIRE PREFERRED";
+  BACKGROUND_COLOR = backgroundColor || "#0F52BA";
   TOTAL_SPENT = parseFloat(totalSpent) || 0;
   MONTHLY_LIMIT = parseFloat(monthlyLimit) || 0;
-  RECENT = parseFloat(recent) || "N/A";
-  CURRENCY_CODE = currencyCode.trimEnd() || "USD";
-  CARD_TYPE = cardType.trimend() || "CREDIT";
-  CLOSING_DATE = closingDate.trimEnd() || "11-09-2024";
-  EMOJI = emoji.trimEnd() || "🗓️";
+  RECENT = parseFloat(recent.replace(/,/g, '')) || "N/A";
+  CURRENCY_CODE = currencyCode || "USD";
+  CARD_TYPE = cardType || "CREDIT";
+  CLOSING_DATE = closingDate || "11-09-2024";
+  EMOJI = emoji || "🗓️";
 }
+
 let CHECKING_ACCOUNT = TOTAL_SPENT;
 let SAVINGS_ACCOUNT = 0;
 
@@ -108,18 +92,35 @@ function main() {
 
 function showWidget(widget) {
   if (config.runsInApp) {
-    widget.presentMedium();
-  }
-  else if (config.runsInWidget) {
+    // Display an alert to inform the user the widget has been refreshed
+    let alert = new Alert();
+    alert.title = "All Widgets Refreshed";
+    alert.message = "Swipe up to close.";
+    alert.addAction("OK");
+    alert.present();
+
+    // Set the widget in the app context
     Script.setWidget(widget);
   }
+  else if (config.runsInWidget) {
+    // Just set the widget in the widget context
+    Script.setWidget(widget);
+  }
+
+  Script.complete();
 }
 
 function budgetProgressBar(widget, remainingBalance) {
-  let percentageFilled = 0;
 
-  if (remainingBalance > 0) {
-    percentageFilled = remainingBalance/MONTHLY_LIMIT;
+ let percentageFilled = 0;
+ if (CARD_TYPE === "CURRENT BALANCE") {
+    percentageFilled = 1; // Ensure the progress bar is fully filled (no decline)
+  } else if (remainingBalance > 0) {
+    if (DECLINE_BACKGROUND) {
+      percentageFilled = remainingBalance/ MONTHLY_LIMIT;
+    } else {
+      percentageFilled = 1;
+    }
   }
 
   const background = new DrawContext();
@@ -136,15 +137,137 @@ function budgetProgressBar(widget, remainingBalance) {
   widget.backgroundImage = background.getImage();
 }
 
-function createWidget(remainingBalance, balancedUsed, savingsUsed)
-  {
-  const widget = new ListWidget();
-  const mainColumn = widget.addStack();
+// Small Widget
+
+function smallRow_1(mainColumn) {
   mainColumn.layoutVertically();
-  addRow_1(mainColumn);
-  addRow_2(mainColumn, remainingBalance);
-  addRow_3(mainColumn);
-  addRow_4(mainColumn);
+  const row_1 = mainColumn.addStack();
+  let cardName = CARD_NAME; // Your card name variable
+const minLength = 15; // Minimum length you want
+
+  // Card Name Label
+  const cardNameLabel = row_1.addText(cardName + '\n');
+  cardNameLabel.font = STYLE.font.row_1;
+  row_1.addSpacer();
+
+
+
+  // Row 1 Complete
+  mainColumn.addSpacer();
+}
+
+function formatCurrencyString(currencyString) {
+  // Check if the character at index 2 is a number
+  if (!isNaN(currencyString[1])) {
+    return currencyString; // If index 2 is a number, return the original string
+  } else {
+    // Use a regular expression to find the index of the first digit
+    const firstDigitIndex = currencyString.search(/\d/);
+
+    // If a digit is found, return the substring starting from that index
+    if (firstDigitIndex !== -1) {
+      return currencyString.substring(firstDigitIndex);
+    }
+
+    return currencyString; // Return the original string if no digit is found
+  }
+}
+
+function smallRow_2(mainColumn, remainingBalance) {
+  const row_2 = mainColumn.addStack();
+
+  if (CARD_TYPE == "CURRENT BALANCE") {
+    let totalBalance = formatCurrency(TOTAL_SPENT, DEVICE_LOCALE, CURRENCY_CODE);
+    let totalLabel = row_2.addText(formatCurrencyString(totalBalance));
+    totalLabel.font = Font.boldSystemFont(26);
+    mainColumn.addSpacer();
+    return;
+  }
+
+  // Balance Label
+  const formattedBalance = formatCurrency(remainingBalance, DEVICE_LOCALE, CURRENCY_CODE);
+  const balanceLabel = row_2.addText(formatCurrencyString(formattedBalance));
+  balanceLabel.textColor = getBalanceColor(remainingBalance);
+  balanceLabel.font = STYLE.font.row_2;
+
+  // Row 2 complete
+  mainColumn.addSpacer();
+}
+
+function smallRow_3(mainColumn) {
+  const row_3 = mainColumn.addStack();
+
+  // Card Type Background
+  const cardTypeBackground = row_3.addStack();
+  cardTypeBackground.cornerRadius = 5;
+  cardTypeBackground.setPadding(5, 10, 5, 10);
+  cardTypeBackground.backgroundColor = new Color(generateMonochromatic(BACKGROUND_COLOR));
+
+  // Alignment Stack
+  const alignmentStack = row_3.addStack();
+  alignmentStack.setPadding(5, 10, 5, 10);
+
+  // Card Type Label
+
+  if (CARD_TYPE == "CURRENT BALANCE") {
+    let card_type = CARD_TYPE;
+    let cardTypeLabel = cardTypeBackground.addText(`CURRENT`);
+    cardTypeLabel.font = STYLE.font.row_3;
+    mainColumn.addSpacer();
+    return;
+  }
+  let cardTypeLabel = cardTypeBackground.addText(`${CARD_TYPE}`);
+  cardTypeLabel.font = STYLE.font.row_3;
+  mainColumn.addSpacer();
+}
+
+function smallRow_4(mainColumn) {
+  const row_4 = mainColumn.addStack();
+
+  let formattedAmount = RECENT;
+
+  if (typeof(RECENT) == "number") {
+
+    if (RECENT > 0) {
+      formattedAmount = '-' + formatCurrency(RECENT, DEVICE_LOCALE, CURRENCY_CODE);
+
+    } else {
+      formattedAmount = '+' + formatCurrency((RECENT* -1), DEVICE_LOCALE, CURRENCY_CODE);
+    }
+  }
+
+  // Amount Label
+  const amountLabel = row_4.addText(formattedAmount);
+  if (formattedAmount == 'N/A') {
+    amountLabel.textColor = STYLE.color.greyedOut;
+  }
+  amountLabel.font = STYLE.font.row_4
+  row_4.addSpacer();
+}
+
+
+function createWidget(remainingBalance, balancedUsed, savingsUsed) {
+  const widget = new ListWidget();
+  let size = config.widgetFamily;
+  const mainColumn = widget.addStack();
+
+  if (size === 'small') {
+    // UI for small widget
+
+    smallRow_1(mainColumn);
+    smallRow_2(mainColumn, remainingBalance);
+    smallRow_3(mainColumn);
+    smallRow_4(mainColumn);
+  } else if (size === 'medium') {
+    // UI for the medium widget
+
+    mainColumn.layoutVertically();
+    addRow_1(mainColumn);
+    addRow_2(mainColumn, remainingBalance);
+    addRow_3(mainColumn);
+    addRow_4(mainColumn);
+  }
+
   return widget;
 }
 
@@ -197,21 +320,50 @@ function getTime() {
   return `${hours}:${minutes} ${ampm}`;
 }
 
-function getComplementaryColor(hex) {
-  if (hex.charAt(0) === '#') {
-    hex = hex.slice(1);
+function generateMonochromatic(hex) {
+  // Convert hex to RGB
+  let rgb = hexToRgb(hex);
+
+  // Adjust brightness by darkening or lightening
+  let adjustedColor = adjustBrightness(rgb, -40); // Adjust this value for more/less contrast
+
+  // Convert back to hex
+  return rgbToHex(adjustedColor.r, adjustedColor.g, adjustedColor.b);
+}
+
+// Helper function to convert hex to RGB
+function hexToRgb(hex) {
+  hex = hex.replace(/^#/, '');
+  if (hex.length === 3) {
+      hex = hex.split('').map(h => h + h).join('');
   }
-  let r = parseInt(hex.substring(0, 2), 16);
-  let g = parseInt(hex.substring(2, 4), 16);
-  let b = parseInt(hex.substring(4, 6), 16);
+  const bigint = parseInt(hex, 16);
+  return {
+      r: (bigint >> 16) & 255,
+      g: (bigint >> 8) & 255,
+      b: bigint & 255
+  };
+}
 
-  r = 255 - r;
-  g = 255 - g;
-  b = 255 - b;
+// Helper function to adjust brightness
+function adjustBrightness(rgb, amount) {
+  return {
+      r: Math.min(255, Math.max(0, rgb.r + amount)),
+      g: Math.min(255, Math.max(0, rgb.g + amount)),
+      b: Math.min(255, Math.max(0, rgb.b + amount))
+  };
+}
 
-  let complementaryHex = `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).toUpperCase()}`
+// Helper function to convert RGB to hex
+function rgbToHex(r, g, b) {
+  const toHex = n => n.toString(16).padStart(2, '0');
+  return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+}
 
-  return complementaryHex
+function toTitleCase(str) {
+  return str.toLowerCase().split(' ').map(word =>
+    word.charAt(0).toUpperCase() + word.slice(1)
+  ).join(' ');
 }
 
 function addRow_3(mainColumn) {
@@ -221,19 +373,22 @@ function addRow_3(mainColumn) {
   const cardTypeBackground = row_3.addStack();
   cardTypeBackground.cornerRadius = 5;
   cardTypeBackground.setPadding(5, 10, 5, 10);
-  if (CARD_TYPE == "CREDIT") {
-    cardTypeBackground.backgroundColor = new Color("#000000");
-  } else {
-    cardTypeBackground.backgroundColor = new Color(complementaryHex(BACKGROUND_COLOR));
-  }
+  cardTypeBackground.backgroundColor = new Color(generateMonochromatic(BACKGROUND_COLOR));
 
   // Alignment Stack
   const alignmentStack = row_3.addStack();
   alignmentStack.setPadding(5, 10, 5, 10);
 
-
   // Card Type Label
-  const cardTypeLabel = cardTypeBackground.addText(`${CARD_TYPE}`);
+
+  if (CARD_TYPE == "CURRENT BALANCE") {
+    let card_type = CARD_TYPE;
+    let cardTypeLabel = cardTypeBackground.addText(`${card_type}`);
+    cardTypeLabel.font = STYLE.font.row_3;
+    mainColumn.addSpacer();
+    return;
+  }
+  let cardTypeLabel = cardTypeBackground.addText(`${CARD_TYPE}`);
   cardTypeLabel.font = STYLE.font.row_3;
 
   // Checking Label
@@ -266,6 +421,14 @@ function addRow_3(mainColumn) {
 function addRow_2(mainColumn, remainingBalance) {
   const row_2 = mainColumn.addStack();
 
+  if (CARD_TYPE == "CURRENT BALANCE") {
+    let totalBalance = formatCurrency(TOTAL_SPENT, DEVICE_LOCALE, CURRENCY_CODE);
+    let totalLabel = row_2.addText(totalBalance);
+    totalLabel.font = STYLE.font.row_2;
+    mainColumn.addSpacer();
+    return;
+  }
+
   // Balance Label
   const formattedBalance = formatCurrency(remainingBalance, DEVICE_LOCALE, CURRENCY_CODE);
   const balanceLabel = row_2.addText(formattedBalance);
@@ -287,7 +450,7 @@ function getBalanceColor(balance) {
  *@param {string} currencySymbol
  */
  function formatCurrency(amount, locale='en-US', currency='USD') {
-  return amount.toLocaleString(locale, {style: 'currency', currency: currency });
+  return amount.toLocaleString(locale, {style: 'currency', currency: currency});
 }
 
 function addRow_1(mainColumn) {
