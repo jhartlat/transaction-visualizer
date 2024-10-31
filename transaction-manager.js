@@ -1,9 +1,11 @@
-const CLOSING_KEY = "Closing Date";
-const TOTAL_KEY = "Total Spent";
-const RECENT_KEY = "Recent";
-const LIMIT_KEY = "Monthly Limit";
+const KEYS = {
+    CLOSING_DATE: "Closing Date",
+    MONTHLY_LIMIT: "Monthly Limit",
+    RECENT: "Recent",
+    TOTAL_SPENT: "Total Spent"
+};
 const FM = FileManager.iCloud();
-const CONFIG_FILE_PATH = getFilePath("Transaction Visualizer/Card Name/config.json");
+const CONFIG_FILE = getFilePath("Transaction Visualizer/Card Name/config.json");
 const TX_FILE_PATH = getFilePath("Transaction Visualizer/Card Name/transactions.txt");
 
 
@@ -108,11 +110,11 @@ FM.writeString(path, newContent);
 
 
 function logSpending(totalSpent) {
-    const content = FM.readString(CONFIG_FILE_PATH);
+    const content = FM.readString(CONFIG_FILE);
     try {
         const jsonData = JSON.parse(content);
-        if (LIMIT_KEY in jsonData) {
-            let monthlyLimit = parseFloat(jsonData[LIMIT_KEY]);
+        if (KEYS.MONTHLY_LIMIT in jsonData) {
+            let monthlyLimit = parseFloat(jsonData[KEYS.MONTHLY_LIMIT]);
             let deductFromChecking = totalSpent;
             let deductFromSavings = 0;
 
@@ -192,18 +194,18 @@ function getLastTransaction(filePath) {
 
 function main() {
     try {
-        const closingDate = readJsonValue(CONFIG_FILE_PATH, CLOSING_KEY);
+        const closingDate = readJsonValue(CONFIG_FILE, KEYS.CLOSING_DATE);
         const newClosingDate = updateClosingDate(closingDate);
         const totalSpent = sumTransactions(TX_FILE_PATH).toFixed(2);
         const recent = getLastTransaction(TX_FILE_PATH);
 
-        updateConfigFile(CONFIG_FILE_PATH, CLOSING_KEY, newClosingDate);
+        updateConfigFile(CONFIG_FILE, KEYS.CLOSING_DATE, newClosingDate);
         console.log(newClosingDate + "\n");
 
-        updateConfigFile(CONFIG_FILE_PATH, TOTAL_KEY, totalSpent);
+        updateConfigFile(CONFIG_FILE, KEYS.TOTAL_SPENT, totalSpent);
         console.log(totalSpent + "\n");
 
-        updateConfigFile(CONFIG_FILE_PATH, RECENT_KEY, recent);
+        updateConfigFile(CONFIG_FILE, KEYS.RECENT, recent);
         console.log(recent + "\n");
 
     }
@@ -213,8 +215,6 @@ function main() {
 
 }
 
-
 main();
 
 Script.complete();
-
