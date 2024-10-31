@@ -1,13 +1,18 @@
+const CARD_NAME = args.shortcutParameter;
+const FM = FileManager.iCloud();
+const DIRECTORY = FM.documentsDirectory();
+const CONFIG_FILE = getFilePath("config.json");
+const TRANSACTION_FILE = getFilePath("transactions.txt");
 const KEYS = {
     CLOSING_DATE: "Closing Date",
     MONTHLY_LIMIT: "Monthly Limit",
     RECENT: "Recent",
     TOTAL_SPENT: "Total Spent"
 };
-const FM = FileManager.iCloud();
-const CONFIG_FILE = getFilePath("Transaction Visualizer/Card Name/config.json");
-const TX_FILE_PATH = getFilePath("Transaction Visualizer/Card Name/transactions.txt");
 
+function getFilePath(fileName) {
+    return FM.joinPath(DIRECTORY,`transaction-visualizer/${CARD_NAME}/${fileName}`);
+}
 
 function readJsonValue(filePath, key) {
     if (!FM.fileExists(filePath)) {
@@ -89,13 +94,13 @@ function updateClosingDate(closingDate) {
         return closingDate;
     }
     logAllocationFile(closingDate);
-    resetTransactions(TX_FILE_PATH);
+    resetTransactions(TRANSACTION_FILE);
     return getNextClosingDate(closingDate);
 }
 
 
 function logAllocationFile(closingDate) {
-    const totalSpent = Math.round(sumTransactions(TX_FILE_PATH) * 100) / 100;
+    const totalSpent = Math.round(sumTransactions(TRANSACTION_FILE) * 100) / 100;
     let [deductFromChecking, deductFromSavings] = logSpending(totalSpent);
     const directory = FM.documentsDirectory();
     const path = FM.joinPath(directory, "Transaction Visualizer/Card Name/Log Name");
@@ -143,9 +148,7 @@ function resetTransactions(filePath) {
 }
 
 
-function getFilePath(fileName) {
-    return FM.documentsDirectory() + `/${fileName}`;
-}
+
 
 
 function updateConfigFile(filePath, key, newValue) {
@@ -196,8 +199,8 @@ function main() {
     try {
         const closingDate = readJsonValue(CONFIG_FILE, KEYS.CLOSING_DATE);
         const newClosingDate = updateClosingDate(closingDate);
-        const totalSpent = sumTransactions(TX_FILE_PATH).toFixed(2);
-        const recent = getLastTransaction(TX_FILE_PATH);
+        const totalSpent = sumTransactions(TRANSACTION_FILE).toFixed(2);
+        const recent = getLastTransaction(TRANSACTION_FILE);
 
         updateConfigFile(CONFIG_FILE, KEYS.CLOSING_DATE, newClosingDate);
         console.log(newClosingDate + "\n");
