@@ -1,18 +1,24 @@
-const CARD_NAME = args.shortcutParameter || "Default Card";
+const CARD_NAME = args.shortcutParameter;
 const FM = FileManager.iCloud();
 const DIRECTORY = FM.documentsDirectory();
 const CONFIG_FILE = getFilePath("config.json");
 const TRANSACTION_FILE = getFilePath("transactions.txt");
+const KEYS = {
+        CLOSING_DATE: "Closing Date",
+        MONTHLY_LIMIT: "Monthly Limit",
+        RECENT: "Recent",
+        TOTAL_SPENT: "Total Spent"
+    };
 
 function getFilePath(fileName) {
     return FM.joinPath(DIRECTORY,`transaction-visualizer/${CARD_NAME}/${fileName}`);
 }
 
-function readJsonValue(filePath, key) {
-    if (!FM.fileExists(filePath)) {
+function readJsonValue(key) {
+    if (!FM.fileExists(CONFIG_FILE)) {
         throw new Error(`File does not exist at ${filePath}.`);
     }
-    const content = FM.readString(filePath);
+    const content = FM.readString(CONFIG_FILE);
     const jsonData = JSON.parse(content);
     return jsonData[key];
 }
@@ -88,8 +94,8 @@ function logAllocationFile(closingDate) {
     + `CHK: ${deductFromChecking.toFixed(2)} + `
     + `SAV: ${deductFromSavings.toFixed(2)} = `
     + `${total.toFixed(2)}\n`;
-    const path = getFilePath(logName);
-    FM.writeString(path, newContent);
+    const filePath = getFilePath(logName);
+    FM.writeString(filePath, newContent);
 }
 
 function logSpending(totalSpent) {
@@ -115,37 +121,39 @@ function logSpending(totalSpent) {
             console.log(`${key} not found in the JSON object.`);
         }
     }
-    catch (error) {
-        console.log("Error parsing JSON data:", error);
+    catch (e) {
+        console.log(`\nError parsing JSON data:\n${e}`);
     }
 }
 
-function resetTransactions(filePath) {
-    FM.writeString(filePath, "0.00");
+function resetTransactions() {
+    FM.writeString(TRANSACTION_FILE, "0.00");
 }
 
-function updateConfigFile(filePath, key, newValue) {
-    const content = FM.readString(filePath);
+function updateConfigFile(key, newValue) {
+    const content = FM.readString(CONFIG_FILE);
     try {
         const jsonData = JSON.parse(content);
         if (key in jsonData) {
             jsonData[key] = newValue;
             const updatedContent = JSON.stringify(jsonData, null, 2);
-            FM.writeString(filePath, updatedContent);
+            FM.writeString(CONFIG_FILE, updatedContent);
             console.log(`${key} key in file updated successfully.`);
         }
         else {
             console.log(`${key} not found in the JSON object.`);
         }
     }
-    catch (error) {
-        console.log("Error parsing JSON data:", error);
+    catch (e) {
+        console.log(`\nError parsing JSON data:\n${e}`);
     }
-
 }
 
-function sumTransactions(filePath) {
-    const content = FM.readString(filePath);
+function sumTransactions() {
+    if (!FM.fileExists(TRANSACTION_FILE)) {
+        FM.writeString(TRANSACTION_FILE, "0.00");
+    }
+    const content = FM.readString(TRANSACTION_FILE);
     const transactions = content.split("\n");
     let sum = 0;
     for (const transaction of transactions) {
@@ -165,30 +173,25 @@ function getLastTransaction(filePath) {
 }
 
 function main() {
-    const KEYS = {
-        CLOSING_DATE: "Closing Date",
-        MONTHLY_LIMIT: "Monthly Limit",
-        RECENT: "Recent",
-        TOTAL_SPENT: "Total Spent"
-    };
+
     try {
         const closingDate = readJsonValue(KEYS.CLOSING_DATE);
         const newClosingDate = updateClosingDate(closingDate);
         const totalSpent = sumTransactions(TRANSACTION_FILE);
         const recent = getLastTransaction(TRANSACTION_FILE);
 
-        updateConfigFile(CONFIG_FILE, KEYS.CLOSING_DATE, newClosingDate);
+        updateConfigFile(KEYS.CLOSING_DATE, newClosingDate);
         console.log(newClosingDate + "\n");
 
-        updateConfigFile(CONFIG_FILE, KEYS.TOTAL_SPENT, totalSpent);
+        updateConfigFile(KEYS.TOTAL_SPENT, totalSpent);
         console.log(totalSpent + "\n");
 
-        updateConfigFile(CONFIG_FILE, KEYS.RECENT, recent);
+        updateConfigFile(KEYS.RECENT, recent);
         console.log(recent + "\n");
 
     }
-    catch (error) {
-        console.log("An error occurred in main: ", error);
+    catch (e) {
+        console.log(`\nAn error occurred in main: \n${e}`);
     }
 }
 
