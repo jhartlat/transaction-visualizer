@@ -143,7 +143,7 @@ function smallRow_1(mainColumn) {
   mainColumn.layoutVertically();
   const row_1 = mainColumn.addStack();
   let cardName = CARD_NAME; // Your card name variable
-const minLength = 15; // Minimum length you want
+  const minLength = 15; // Minimum length you want
 
   // Card Name Label
   const cardNameLabel = row_1.addText(cardName + '\n');
