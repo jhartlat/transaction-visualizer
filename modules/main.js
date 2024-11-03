@@ -26,7 +26,44 @@ const {
    EMOJI
 } = readConfigData();
 
-// Account Variables
-let CHECING_ACCOUNT = TOTAL_SPENT;
-let SAVINGS_ACCOUNT = 0;
+function allocateSpending() {
+    const remainingBalance = MONTHLY_LIMIT - TOTAL_SPENT;
+    let checkingAccount = TOTAL_SPENT;
+    let savingsAccount = 0;
 
+    if (TOTAL_SPENT >= MONTHLY_LIMIT) {
+        checkingAccount = MONTHLY_LIMIT;
+        savingsAccount = TOTAL_SPENT - MONTHLY_LIMIT;
+    }
+
+    return [remainingBalance, checkingAccount, savingsAccount];
+  }
+
+  function createVisualizer(remainingBalance) {
+    let widget = new ListWidget();
+    let size = config.widgetFamily;
+    const mainColumn = widget.addStack();
+
+    if (size === "small") {
+        // UI for the small widget
+
+        smallVisualizer(mainColumn);
+
+    } else if (size === "medium") {
+        // UI for the medium widget
+
+        mainColumn.layoutVertically();
+        mediumVisualizer(mainColumn);
+
+    }
+
+    return widget;
+  }
+
+  function smallVisualizer(mainColumn) {
+
+  }
+
+  function mediumVisualizer(mainColumn) {
+    
+  }
