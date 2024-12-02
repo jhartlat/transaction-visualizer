@@ -48,29 +48,27 @@ function mediumRow_1(mainColumn) {
 }
 
 
-function addCurrentBalance() {
-    const totalBalance = utils.formatCurrency(TOTAL_SPENT, DEVICE_LOCALE, CURRENCY_CODE);
-    const totalLabel = row_2.addText(totalBalance);
+function addCurrentBalance(row_2) {
+    const currentBalance = utils.formatCurrency(TOTAL_SPENT, DEVICE_LOCALE, CURRENCY_CODE);
+    const currentBalanceLabel = row_2.addText(currentBalance);
 }
 
 
-function addRemainingBalance() {
-
+function addRemainingBalance(row_2) {
+    const remainingBalance = utils.formatCurrency('remainingBalance', DEVICE_LOCALE, CURRENCY_CODE);
+    const remainingBalanceLabel = row_2.addText(remainingBalance);
+    remainingBalanceLabel.textColor = utils.getBalanceColor('remainingBalance');
+    remainingBalanceLabel.font = STYLE.font.row_2;
 }
 
 
-function mediumRow_2(mainColumn, remainingBalance) {
+function mediumRow_2(mainColumn) {
     const row_2 = mainColumn.addStack();
-
     if (CARD_TYPE === "CURRENT BALANCE") {
-
+        addCurrentBalance(row_2);
     } else {
-        const formattedBalance = utils.formatCurrency(remainingBalance, DEVICE_LOCALE, CURRENCY_CODE);
-        const balanceLabel = row_2.addText(formatttedBalance);
-        balanceLabel.textColor = utils.getBalanceColor(remainingBalance);
-        balanceLabel.font = STYLE.font.row_2;
+        addRemainingBalance(row_2);
     }
-
     mainColumn.addSpacer();
 }
 
