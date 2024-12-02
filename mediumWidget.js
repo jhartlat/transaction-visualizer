@@ -56,3 +56,21 @@ function mediumRow_2(mainColumn, remainingBalance) {
     }
     mainColumn.addSpacer();
 }
+
+function mediumRow_3() {
+    const row_3 = mainColumn.addStack();
+
+    // Card Type Background
+    const cardTypeBackground = row_3.addStack();
+    cardTypeBackground.cornerRadius = 5;
+    cardTypeBackground.setPadding(5, 10, 5, 10);
+    cardTypeBackground.backgroundColor = new Color(generateMonochromatic(BACKGROUND_COLOR));
+
+    // Card Type Label
+    const labelText = CARD_TYPE === "CURRENT BALANCE" ? "CURRENT" : CARD_TYPE;
+    const cardTypeLabel = cardTypeBackground.addText(labelText);
+    cardTypeLabel.font = STYLE.font.row_3;
+
+    // Spacer after row 3
+    mainColumn.addSpacer();
+}
