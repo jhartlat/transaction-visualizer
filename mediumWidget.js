@@ -72,55 +72,66 @@ function mediumRow_2(mainColumn) {
     mainColumn.addSpacer();
 }
 
-
-function mediumRow_3(mainColumn) {
-    const row_3 = mainColumn.addStack();
-
-    // Card Type Background
+function addCardTypeBackground(row_3) {
     const cardTypeBackground = row_3.addStack();
     cardTypeBackground.cornerRadius = 5;
     cardTypeBackground.setPadding(5, 10, 5, 10);
-    cardTypeBackground.backgroundColor = new Color(generateMonochromatic(BACKGROUND_COLOR));
+    cardTypeBackground.backgroundColor = new Color(utils.getMonochromeColor(BACKGROUND_COLOR));
+    return cardTypeBackground;
+}
 
-    // Alignment Stack
+
+function addAlignmentStack(row_3) {
     const alignmentStack = row_3.addStack();
     alignmentStack.setPadding(5, 10, 5, 10);
+    return alignmentStack;
+}
 
-    // Card Type Label
-    if (CARD_TYPE == "CURRENT BALANCE") {
-        let card_type = CARD_TYPE;
-        let cardTypeLabel = cardTypeBackground.addText(`${card_type}`);
-        cardTypeLabel.font = STYLE.font.row_3;
-        mainColumn.addSpacer();
-        return;
-    }
-    let cardTypeLabel = cardTypeBackground.addText(`${CARD_TYPE}`);
+
+function addCardTypeLabel(backgroundStack) {
+    const cardTypeLabel = backgroundStack.addText(`${CARD_TYPE}`);
     cardTypeLabel.font = STYLE.font.row_3;
+}
 
-    // Checking Label
+
+function addCheckingLabel(alignmentStack) {
     let checkingLabel;
-    if (CHECKING_ACCOUNT == MONTHLY_LIMIT) {
-        checkingLabel = alignmentStack.addText(`CHK: MAX `);
+    if ('checkingBalance' === MONTHLY_LIMIT) {
+        checkingLabel = alignmentStack.addText("CHK: MAX");
         checkingLabel.textColor = STYLE.color.greyedOut;
     } else {
-        let formattedChecking = formatCurrency(CHECKING_ACCOUNT, DEVICE_LOCALE, CURRENCY_CODE);
-        checkingLabel = alignmentStack.addText(`CHK: ${formattedChecking} `);
+        let formattedChecking = utils.formatCurrency(checkingBalance, DEVICE_LOCALE, CURRENCY_CODE);
+        checkingLabel = alignmentStack.addText(`CHK: ${formattedChecking}`);
     }
     checkingLabel.font = STYLE.font.row_3;
+}
 
-    // Savings Label
+function addSavingsLabel(alignmentStack) {
     let savingsLabel;
-    if (SAVINGS_ACCOUNT == 0) {
-        savingsLabel = alignmentStack.addText('SAV: ←');
+    if ('savingsBalance' === 0) {
+        savingsLabel = alignmentStack.addText("SAV: ←");
         savingsLabel.textColor = STYLE.color.greyedOut;
     } else {
-        let formattedSavings = formatCurrency(SAVINGS_ACCOUNT, DEVICE_LOCALE, CURRENCY_CODE);
+        let formattedSavings = utils.formatCurrency(savingsBalance, DEVICE_LOCALE, CURRENCY_CODE);
         savingsLabel = alignmentStack.addText(`SAV: ${formattedSavings}`);
         savingsLabel.textColor = STYLE.color.negativeBalance;
     }
     savingsLabel.font = STYLE.font.row_3;
+}
 
-    // Row 3 complete
+
+function mediumRow_3(mainColumn) {
+    const row_3 = mainColumn.addStack();
+    const backgroundStack = addCardTypeBackground(row_3);
+    const alignmentStack = addAlignmentStack(row_3);
+    if (CARD_TYPE === "CURRENT BALANCE") {
+        addCardTypeLabel(backgroundStack);
+        mainColumn.addSpacer();
+        return;
+    }
+    addCardTypeLabel(backgroundStack);
+    addCheckingLabel(alignmentStack);
+    addSavingsLabel(alignmentStack);
     mainColumn.addSpacer();
 }
 
