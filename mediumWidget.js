@@ -1,5 +1,6 @@
 const utils = importModule('utils');
 const {
+    DEVICE_LOCALE,
     CARD_NAME,
     BACKGROUND_COLOR,
     TOTAL_SPENT,
@@ -40,3 +41,18 @@ function mediumRow_1(mainColumn) {
     mainColumn.addSpacer();
 }
 
+
+function mediumRow_2(mainColumn, remainingBalance) {
+    const row_2 = mainColumn.addStack();
+
+    if (CARD_TYPE === "CURRENT BALANCE") {
+        const totalBalance = utils.formatCurrency(TOTAL_SPENT, DEVICE_LOCALE, CURRENCY_CODE);
+        const totalLabel = row_2.addText(totalBalance);
+    } else {
+        const formattedBalance = utils.formatCurrency(remainingBalance, DEVICE_LOCALE, CURRENCY_CODE);
+        const balanceLabel = row_2.addText(formatttedBalance);
+        balanceLabel.textColor = utils.getBalanceColor(remainingBalance);
+        balanceLabel.font = STYLE.font.row_2;
+    }
+    mainColumn.addSpacer();
+}
