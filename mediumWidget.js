@@ -72,6 +72,7 @@ function mediumRow_2(mainColumn) {
     mainColumn.addSpacer();
 }
 
+
 function addCardTypeBackground(row_3) {
     const cardTypeBackground = row_3.addStack();
     cardTypeBackground.cornerRadius = 5;
@@ -97,7 +98,7 @@ function addCardTypeLabel(backgroundStack) {
 function addCheckingLabel(alignmentStack) {
     let checkingLabel;
     if ('checkingBalance' === MONTHLY_LIMIT) {
-        checkingLabel = alignmentStack.addText("CHK: MAX");
+        checkingLabel = alignmentStack.addText("CHK: MAX ");
         checkingLabel.textColor = STYLE.color.greyedOut;
     } else {
         let formattedChecking = utils.formatCurrency(checkingBalance, DEVICE_LOCALE, CURRENCY_CODE);
@@ -105,6 +106,7 @@ function addCheckingLabel(alignmentStack) {
     }
     checkingLabel.font = STYLE.font.row_3;
 }
+
 
 function addSavingsLabel(alignmentStack) {
     let savingsLabel;
@@ -136,36 +138,42 @@ function mediumRow_3(mainColumn) {
 }
 
 
-function mediumRow_4(mainColumn) {
-    const row_4 = mainColumn.addStack();
+function addActivityLabel(row_4) {
+    const activityLabel = row_4.addText("Last Activity: ");
+    activityLabel.font = STYLE.font.row_4;
+}
 
-    // Last Activity Label
-    const lastActivityLabel = row_4.addText("Last Activity: ");
-    lastActivityLabel.font = STYLE.font.row_4;
 
-    // Activity Amount
-    let formattedAmount = RECENT;
-    if (typeof (RECENT) == "number") {
-        if (RECENT > 0) {
-            formattedAmount = '-' + formatCurrency(RECENT, DEVICE_LOCALE, CURRENCY_CODE);
-        } else {
-            formattedAmount = '+' + formatCurrency((RECENT * -1), DEVICE_LOCALE, CURRENCY_CODE);
-        }
+function getActivityAmount() {
+    if (typeof(RECENT) === "number" && RECENT > 0) {
+        return '-' + formatCurrency(RECENT, DEVICE_LOCALE, CURRENCY_CODE);
+    } else {
+        return '+' + formatCurrency((RECENT * -1), DEVICE_LOCALE, CURRENCY_CODE);
     }
+}
 
-    // Amount Label
+
+function addAmountLabel(row_4, formattedAmount) {
     const amountLabel = row_4.addText(formattedAmount);
     if (formattedAmount == 'N/A') {
         amountLabel.textColor = STYLE.color.greyedOut;
     }
     amountLabel.font = STYLE.font.row_4
-    row_4.addSpacer();
+}
 
-    // Current Time Label
-    const currentTime = getTime();
+
+function addCurrentTimeLabel(row_4) {
+    const currentTime = utils.getTime();
     const currentTimeLabel = row_4.addText(currentTime);
     currentTimeLabel.font = STYLE.font.row_4;
+}
 
-    // Row 4 complete
+function mediumRow_4(mainColumn) {
+    const row_4 = mainColumn.addStack();
+    addActivityLabel(row_4);
+    const activityAmount = getActivityAmount();
+    addAmountLabel(row_4, activityAmount);
+    row_4.addSpacer();
+    addCurrentTimeLabel(row_4);
     mainColumn.addSpacer();
 }
