@@ -48,14 +48,16 @@ function smallRow_1(mainColumn) {
 
 function addCurrentBalance(row_2) {
     const currentBalance = utils.formatCurrency(TOTAL_SPENT, DEVICE_LOCALE, CURRENCY_CODE);
-    const currentBalanceLabel = row_2.addText(utils.formatString(currentBalance));
-    currentBalanceLabel.font = Font.boldSystemFont(26);
+    const formattedBalance = utils.formatString(currentBalance);
+    const currentBalanceLabel = row_2.addText(formattedBalance);
+    currentBalanceLabel.font = STYLE.font.row_2;
 }
 
 
 function addRemainingBalance(row_2) {
     const remainingBalance = utils.formatCurrency('remainingBalance', DEVICE_LOCALE, CURRENCY_CODE);
-    const remainingBalanceLabel = row_2.addText(utils.formatString(remainingBalance));
+    const formattedBalance = utils.formatString(remainingBalance);
+    const remainingBalanceLabel = row_2.addText(formattedBalance);
     remainingBalanceLabel.textColor = utils.getBalanceColor('remainingBalance');
     remainingBalanceLabel.font = STYLE.font.row_2;
 }
