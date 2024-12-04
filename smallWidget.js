@@ -83,65 +83,21 @@ function addCardTypeBackground(row_3) {
 }
 
 
-function addAlignmentStack(row_3) {
-    const alignmentStack = row_3.addStack();
-    alignmentStack.setPadding(5, 10, 5, 10);
-    return alignmentStack;
-}
-
-
-function addCardTypeLabel(backgroundStack) {
-    const cardTypeLabel = backgroundStack.addText(`${CARD_TYPE}`);
+function addCardTypeLabel(backgroundStack, text) {
+    const cardTypeLabel = backgroundStack.addText(text);
     cardTypeLabel.font = STYLE.font.row_3;
 }
 
 
-function addCheckingLabel(alignmentStack) {
-    let checkingLabel;
-    if ('checkingBalance' === MONTHLY_LIMIT) {
-        checkingLabel = alignmentStack.addText("CHK: MAX ");
-        checkingLabel.textColor = STYLE.color.greyedOut;
-    } else {
-        let formattedChecking = utils.formatCurrency(checkingBalance, DEVICE_LOCALE, CURRENCY_CODE);
-        checkingLabel = alignmentStack.addText(`CHK: ${formattedChecking}`);
-    }
-    checkingLabel.font = STYLE.font.row_3;
-}
-
-
-function addSavingsLabel(alignmentStack) {
-    let savingsLabel;
-    if ('savingsBalance' === 0) {
-        savingsLabel = alignmentStack.addText("SAV: ←");
-        savingsLabel.textColor = STYLE.color.greyedOut;
-    } else {
-        let formattedSavings = utils.formatCurrency(savingsBalance, DEVICE_LOCALE, CURRENCY_CODE);
-        savingsLabel = alignmentStack.addText(`SAV: ${formattedSavings}`);
-        savingsLabel.textColor = STYLE.color.negativeBalance;
-    }
-    savingsLabel.font = STYLE.font.row_3;
-}
-
-
-function mediumRow_3(mainColumn) {
+function smallRow_3(mainColumn) {
     const row_3 = mainColumn.addStack();
     const backgroundStack = addCardTypeBackground(row_3);
-    const alignmentStack = addAlignmentStack(row_3);
     if (CARD_TYPE === "CURRENT BALANCE") {
-        addCardTypeLabel(backgroundStack);
-        mainColumn.addSpacer();
-        return;
+        addCardTypeLabel(backgroundStack, "CURRENT");
+    } else {
+        addCardTypeLabel(backgroundStack, CARD_TYPE);
     }
-    addCardTypeLabel(backgroundStack);
-    addCheckingLabel(alignmentStack);
-    addSavingsLabel(alignmentStack);
     mainColumn.addSpacer();
-}
-
-
-function addActivityLabel(row_4) {
-    const activityLabel = row_4.addText("Last Activity: ");
-    activityLabel.font = STYLE.font.row_4;
 }
 
 
@@ -163,24 +119,14 @@ function addAmountLabel(row_4, formattedAmount) {
 }
 
 
-function addCurrentTimeLabel(row_4) {
-    const currentTime = utils.getTime();
-    const currentTimeLabel = row_4.addText(currentTime);
-    currentTimeLabel.font = STYLE.font.row_4;
-}
-
-
-function mediumRow_4(mainColumn) {
+function smallRow_4(mainColumn) {
     const row_4 = mainColumn.addStack();
-    addActivityLabel(row_4);
     const activityAmount = getActivityAmount();
     addAmountLabel(row_4, activityAmount);
     row_4.addSpacer();
-    addCurrentTimeLabel(row_4);
-    mainColumn.addSpacer();
 }
 
 
 module.exports = {
-    mediumWidget
+    smallWidget
 };
