@@ -74,13 +74,8 @@ function formatCurrentDate() {
 
 
 function getMonochromeColor(hex) {
-    // Convert hex to RGB
     let rgb = hexToRgb(hex);
-
-    // Adjust brightness by darkening or lightening
-    let adjustedColor = adjustBrightness(rgb, -40); // Adjust this value for more/less contrast
-
-    // Convert back to hex
+    let adjustedColor = adjustBrightness(rgb, -40);
     return rgbToHex(adjustedColor.r, adjustedColor.g, adjustedColor.b);
 }
 
@@ -126,7 +121,7 @@ module.exports = {
     daysBetweenDates,
     formatCurrency,
     formatCurrentDate,
-    generateMonochromatic,
+    getMonochromeColor,
     getTime,
     hexTo_RGB,
     RGB_ToHex,
