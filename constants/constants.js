@@ -1,17 +1,27 @@
 const DECLINE_BACKGROUND = true;
 const DEVICE_LOCALE = getFormattedLocale();
 const SIZE = config.widgetFamily;
+
+
 const {
-    cardName,
-    backgroundColor,
-    totalSpent,
-    monthlyLimit,
-    recent,
-    currencyCode,
-    cardType,
-    closingDate,
-    emoji
-} = extractDetails();
+    TOTAL_SPENT,
+    MONTHLY_LIMIT
+} = extractDetails;
+
+
+const STYLE = {
+    font: {
+        row_1: Font.boldSystemFont(15),
+        row_2: Font.boldSystemFont(26),
+        row_3: Font.boldSystemFont(13),
+        row_4: Font.boldSystemFont(13),
+    },
+    color: {
+        negativeBalance: new Color("#DD4500"),
+        greyedOut: new Color("#818589"),
+        empty: new Color("#1E1E1E")
+    }
+};
 
 
 function extractDetails() {
@@ -29,15 +39,15 @@ function extractDetails() {
     } = cardDetails;
 
     return {
-        cardName: cardName.trimEnd(),
-        backgroundColor: backgroundColor.trimEnd(),
-        totalSpent: parseFloat(totalSpent),
-        monthlyLimit: parseFloat(monthlyLimit),
-        recent: parseFloat(recent.replace(/,/g, "")),
-        currencyCode: currencyCode.trimEnd().toUpperCase(),
-        cardType: cardType.trimEnd().toUpperCase(),
-        closingDate: closingDate,
-        emoji: emoji
+        CARD_NAME: cardName.trimEnd(),
+        BACKGROUND_COLOR: backgroundColor.trimEnd(),
+        TOTAL_SPENT: parseFloat(totalSpent),
+        MONTHLY_LIMIT: parseFloat(monthlyLimit),
+        RECENT: parseFloat(recent.replace(/,/g, "")),
+        CURRENCY_CODE: currencyCode.trimEnd().toUpperCase(),
+        CARD_TYPE: cardType.trimEnd().toUpperCase(),
+        CLOSING_DATE: closingDate,
+        EMOJI: emoji
     };
 }
 
@@ -82,17 +92,31 @@ function getFormattedLocale() {
 }
 
 
+function calculateBalances() {
+    const remainingBalance = MONTHLY_LIMIT - TOTAL_SPENT;
+    let checkingBalance, savingsBalance;
+
+    if (TOTAL_SPENT >= MONTHLY_LIMIT) {
+        checkingBalance = MONTHLY_LIMIT;
+        savingsBalance = TOTAL_SPENT - MONTHLY_LIMIT;
+    } else {
+        checkingBalance = TOTAL_SPENT;
+        savingsBalance = 0;
+    }
+
+    return {
+        REMAINING_BALANCE: remainingBalance,
+        CHECKING_BALANCE: checkingBalance,
+        SAVINGS_BALANCE: savingsBalance
+    }
+}
+
+
 module.exports = {
     DECLINE_BACKGROUND,
     DEVICE_LOCALE,
     SIZE,
-    cardName,
-    backgroundColor,
-    totalSpent,
-    monthlyLimit,
-    recent,
-    currencyCode,
-    cardType,
-    closingDate,
-    emoji
+    STYLE,
+    extractDetails,
+    calculateBalances
 };

@@ -1,4 +1,6 @@
-const utils = importModule('utils');
+const utils = importModule('widgetUtils');
+
+
 const {
     DEVICE_LOCALE,
     STYLE,
