@@ -2,6 +2,12 @@ const utils = importModule('utils');
 const {
     DEVICE_LOCALE,
     STYLE,
+    extractDetails,
+    calculateBalances,
+} = importModule('constants');
+
+
+const {
     CARD_NAME,
     BACKGROUND_COLOR,
     TOTAL_SPENT,
@@ -11,17 +17,25 @@ const {
     CARD_TYPE,
     CLOSING_DATE,
     EMOJI
-} = importModule('constants');
+} = extractDetails();
 
 
-function main() {
+const {
+    REMAINING_BALANCE,
+    CHECKING_BALANCE,
+    SAVINGS_BALANCE
+} = calculateBalances();
+
+
+function mediumWidget() {
     const widget = new ListWidget();
     const mainColumn = widget.addStack();
     mainColumn.layoutVertically();
     mediumRow_1(mainColumn);
-    mediumRow_2(mainColumn, remainingBalance);
+    mediumRow_2(mainColumn);
     mediumRow_3(mainColumn);
     mediumRow_4(mainColumn);
+    return widget;
 }
 
 
@@ -55,9 +69,9 @@ function addCurrentBalance(row_2) {
 
 
 function addRemainingBalance(row_2) {
-    const remainingBalance = utils.formatCurrency('remainingBalance', DEVICE_LOCALE, CURRENCY_CODE);
+    const remainingBalance = utils.formatCurrency(REMAINING_BALANCE, DEVICE_LOCALE, CURRENCY_CODE);
     const remainingBalanceLabel = row_2.addText(remainingBalance);
-    remainingBalanceLabel.textColor = utils.getBalanceColor('remainingBalance');
+    remainingBalanceLabel.textColor = utils.getBalanceColor(REMAINING_BALANCE);
     remainingBalanceLabel.font = STYLE.font.row_2;
 }
 
@@ -97,11 +111,11 @@ function addCardTypeLabel(backgroundStack) {
 
 function addCheckingLabel(alignmentStack) {
     let checkingLabel;
-    if ('checkingBalance' === MONTHLY_LIMIT) {
+    if (CHECKING_BALANCE === MONTHLY_LIMIT) {
         checkingLabel = alignmentStack.addText("CHK: MAX ");
         checkingLabel.textColor = STYLE.color.greyedOut;
     } else {
-        let formattedChecking = utils.formatCurrency(checkingBalance, DEVICE_LOCALE, CURRENCY_CODE);
+        let formattedChecking = utils.formatCurrency(CHECKING_BALANCE, DEVICE_LOCALE, CURRENCY_CODE);
         checkingLabel = alignmentStack.addText(`CHK: ${formattedChecking}`);
     }
     checkingLabel.font = STYLE.font.row_3;
@@ -110,11 +124,11 @@ function addCheckingLabel(alignmentStack) {
 
 function addSavingsLabel(alignmentStack) {
     let savingsLabel;
-    if ('savingsBalance' === 0) {
+    if (SAVINGS_BALANCE === 0) {
         savingsLabel = alignmentStack.addText("SAV: ←");
         savingsLabel.textColor = STYLE.color.greyedOut;
     } else {
-        let formattedSavings = utils.formatCurrency(savingsBalance, DEVICE_LOCALE, CURRENCY_CODE);
+        let formattedSavings = utils.formatCurrency(SAVINGS_BALANCE, DEVICE_LOCALE, CURRENCY_CODE);
         savingsLabel = alignmentStack.addText(`SAV: ${formattedSavings}`);
         savingsLabel.textColor = STYLE.color.negativeBalance;
     }
@@ -168,6 +182,7 @@ function addCurrentTimeLabel(row_4) {
     currentTimeLabel.font = STYLE.font.row_4;
 }
 
+
 function mediumRow_4(mainColumn) {
     const row_4 = mainColumn.addStack();
     addActivityLabel(row_4);
@@ -177,3 +192,8 @@ function mediumRow_4(mainColumn) {
     addCurrentTimeLabel(row_4);
     mainColumn.addSpacer();
 }
+
+
+module.exports = {
+    mediumWidget
+};
