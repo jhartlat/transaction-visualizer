@@ -2,19 +2,27 @@ const utils = importModule('utils');
 const {
     DEVICE_LOCALE,
     STYLE,
-    CARD_NAME,
-    BACKGROUND_COLOR,
-    TOTAL_SPENT,
-    MONTHLY_LIMIT,
-    RECENT,
-    CURRENCY_CODE,
-    CARD_TYPE,
-    CLOSING_DATE,
-    EMOJI
+    extractDetails,
+    calculateBalances,
 } = importModule('constants');
 
 
-function createSmallWidget() {
+const {
+    CARD_NAME,
+    BACKGROUND_COLOR,
+    TOTAL_SPENT,
+    RECENT,
+    CURRENCY_CODE,
+    CARD_TYPE,
+} = extractDetails();
+
+
+const {
+    REMAINING_BALANCE
+} = calculateBalances();
+
+
+function smallWidget() {
     const widget = new ListWidget();
     const mainColumn = widget.addStack();
     mainColumn.layoutVertically();
@@ -23,11 +31,6 @@ function createSmallWidget() {
     mediumRow_3(mainColumn);
     mediumRow_4(mainColumn);
     return widget;
-}
-
-
-function main() {
-    const smallWidget = createSmallWidget();
 }
 
 
@@ -55,10 +58,10 @@ function addCurrentBalance(row_2) {
 
 
 function addRemainingBalance(row_2) {
-    const remainingBalance = utils.formatCurrency('remainingBalance', DEVICE_LOCALE, CURRENCY_CODE);
+    const remainingBalance = utils.formatCurrency(REMAINING_BALANCE, DEVICE_LOCALE, CURRENCY_CODE);
     const formattedBalance = utils.formatString(remainingBalance);
     const remainingBalanceLabel = row_2.addText(formattedBalance);
-    remainingBalanceLabel.textColor = utils.getBalanceColor('remainingBalance');
+    remainingBalanceLabel.textColor = utils.getBalanceColor(REMAINING_BALANCE);
     remainingBalanceLabel.font = STYLE.font.row_2;
 }
 
