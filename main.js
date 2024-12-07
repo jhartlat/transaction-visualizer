@@ -5,7 +5,7 @@ const { mediumWidget } = importModule("mediumWidget");
 const {
     DECLINE_BACKGROUND,
     SIZE,
-    STYLe,
+    STYLE,
     extractDetails,
     calculateBalances
 } = importModule("constants");
