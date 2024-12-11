@@ -14,7 +14,7 @@ const STYLE = {
         row_1: Font.boldSystemFont(15),
         row_2: Font.boldSystemFont(26),
         row_3: Font.boldSystemFont(13),
-        row_4: Font.boldSystemFont(13),
+        row_4: Font.boldSystemFont(13)
     },
     color: {
         negativeBalance: new Color("#DD4500"),
