@@ -6,7 +6,7 @@ const SIZE = config.widgetFamily;
 const {
     TOTAL_SPENT,
     MONTHLY_LIMIT
-} = extractDetails;
+} = extractDetails();
 
 
 const STYLE = {
@@ -54,16 +54,16 @@ function extractDetails() {
 
 function getCardDetails() {
     const fm = FileManager.iCloud();
-    const param = getWidgetParam();
-    const lhs = fm.documentDirectory();
-    const rhs = `transaction-visualizer/${param}/config.json`;
+    //const param = getWidgetParam();
+    const lhs = fm.documentsDirectory();
+    const rhs = `transaction-visualizer/Test Card Name/config.json`;
     const filePath = fm.joinPath(lhs, rhs);
     const content = fm.readString(filePath);
     try {
         return JSON.parse(content);
     } catch (error) {
         console.log(`Error parsing JSON: ${error}`);
-        Script.complete();
+        //Script.complete();
     }
 }
 
@@ -80,15 +80,16 @@ function widgetParamEmpty() {
 
 function getWidgetParam() {
     if (!args.widgetParameter) {
-        widgetParamEmpty();
+        return widgetParamEmpty();
     } else {
-        args.widgetParameter.trimEnd();
+        //return args.widgetParameter.trimEnd();
+return "Test Card Name";
     }
 }
 
 
 function getFormattedLocale() {
-    return Device.locale.replace('_', '-');
+    return Device.locale().replace('_', '-');
 }
 
 
