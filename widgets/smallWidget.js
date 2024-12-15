@@ -1,4 +1,4 @@
-const utils = importModule('widgetUtils');
+const utils = importModule('utils/widgetUtils');
 
 
 const {
@@ -6,7 +6,7 @@ const {
     STYLE,
     extractDetails,
     calculateBalances,
-} = importModule('constants');
+} = importModule('constants/constants');
 
 
 const {
@@ -28,16 +28,16 @@ function smallWidget() {
     const widget = new ListWidget();
     const mainColumn = widget.addStack();
     mainColumn.layoutVertically();
-    mediumRow_1(mainColumn);
-    mediumRow_2(mainColumn);
-    mediumRow_3(mainColumn);
-    mediumRow_4(mainColumn);
+    smallRow_1(mainColumn);
+    smallRow_2(mainColumn);
+    smallRow_3(mainColumn);
+    smallRow_4(mainColumn);
     return widget;
 }
 
 
 function addCardNameLabel(row_1) {
-    const text = CARD_NAME + '/n';
+    const text = CARD_NAME + '\n';
     const cardNameLabel = row_1.addText(text);
     cardNameLabel.font = STYLE.font.row_1;
 }
@@ -46,8 +46,8 @@ function addCardNameLabel(row_1) {
 function smallRow_1(mainColumn) {
     const row_1 = mainColumn.addStack();
     addCardNameLabel(row_1);
-    row_1.addSpacer();
-    mainColumn.addSpacer();
+    //row_1.addSpacer();
+    //mainColumn.addSpacer();
 }
 
 
@@ -108,12 +108,14 @@ function smallRow_3(mainColumn) {
 
 function getActivityAmount() {
     if (typeof(RECENT) === "number" && RECENT > 0) {
-        return '-' + formatCurrency(RECENT, DEVICE_LOCALE, CURRENCY_CODE);
+        return '-' + utils.formatCurrency(RECENT, DEVICE_LOCALE, CURRENCY_CODE);
+    } else if (typeof(RECENT) === "number" && RECENT < 0) {
+        return '+' + utils.formatCurrency((RECENT * -1), DEVICE_LOCALE, CURRENCY_CODE);
     } else {
-        return '+' + formatCurrency((RECENT * -1), DEVICE_LOCALE, CURRENCY_CODE);
+        return "N/A";
+
     }
 }
-
 
 function addAmountLabel(row_4, formattedAmount) {
     const amountLabel = row_4.addText(formattedAmount);
