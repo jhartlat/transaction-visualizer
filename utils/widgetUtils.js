@@ -1,3 +1,7 @@
+const {
+    STYLE,
+} = importModule("constants/constants");
+
 function adjustBrightness(rgb, amount) {
     return {
         r: Math.min(255, Math.max(0, rgb.r + amount)),
@@ -49,16 +53,16 @@ function daysBetweenDates(currentDate, closingDate) {
 }
 
 
-function formatCurrency(amount, locale = 'en-US', currency = 'USD', includeCurrencySymbol = true) {
+function formatCurrency(amount, locale="en-US", currency="USD", includeCurrencySymbol=true) {
     const options = {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
     };
     if (includeCurrencySymbol) {
-        options.style = 'currency';
+        options.style = "currency";
         options.currency = currency;
     } else {
-        options.style = 'decimal';
+        options.style = "decimal";
     }
     return amount.toLocaleString(locale, options);
 }
@@ -74,9 +78,9 @@ function formatCurrentDate() {
 
 
 function getMonochromeColor(hex) {
-    let rgb = hexToRgb(hex);
+    let rgb = hexTo_RGB(hex);
     let adjustedColor = adjustBrightness(rgb, -40);
-    return rgbToHex(adjustedColor.r, adjustedColor.g, adjustedColor.b);
+    return rgb_ToHex(adjustedColor.r, adjustedColor.g, adjustedColor.b);
 }
 
 
@@ -107,7 +111,7 @@ function hexTo_RGB(hex) {
 }
 
 
-function RGB_ToHex(r, g, b) {
+function rgb_ToHex(r, g, b) {
     const componentToHex = c => {
         const hex  = c.toString(16);
         return hex.length === 1 ? '0' + hex : hex;
@@ -122,8 +126,9 @@ module.exports = {
     formatCurrency,
     formatCurrentDate,
     getMonochromeColor,
+    getBalanceColor,
     getTime,
     hexTo_RGB,
-    RGB_ToHex,
+    rgb_ToHex,
     formatString
 };
