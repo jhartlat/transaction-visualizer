@@ -1,4 +1,4 @@
-const utils = importModule('widgetUtils');
+const utils = importModule('utils/widgetUtils');
 
 
 const {
@@ -6,7 +6,7 @@ const {
     STYLE,
     extractDetails,
     calculateBalances,
-} = importModule('constants');
+} = importModule('constants/constants');
 
 
 const {
@@ -49,7 +49,7 @@ function addCardNameLabel(row_1) {
 
 function addDaysLeftLabel(row_1) {
     const currentDate = utils.formatCurrentDate();
-    const numberOfDays = utils.daysBetweenDAtes(currentDate, CLOSING_DATE);
+    const numberOfDays = utils.daysBetweenDates(currentDate, CLOSING_DATE);
     const daysLeftLabel = row_1.addText(`${EMOJI} ${numberOfDays}`);
     daysLeftLabel.font = STYLE.font.row_1;
 }
@@ -118,7 +118,7 @@ function addCheckingLabel(alignmentStack) {
         checkingLabel.textColor = STYLE.color.greyedOut;
     } else {
         let formattedChecking = utils.formatCurrency(CHECKING_BALANCE, DEVICE_LOCALE, CURRENCY_CODE);
-        checkingLabel = alignmentStack.addText(`CHK: ${formattedChecking}`);
+        checkingLabel = alignmentStack.addText(`CHK: ${formattedChecking} `);
     }
     checkingLabel.font = STYLE.font.row_3;
 }
@@ -162,9 +162,12 @@ function addActivityLabel(row_4) {
 
 function getActivityAmount() {
     if (typeof(RECENT) === "number" && RECENT > 0) {
-        return '-' + formatCurrency(RECENT, DEVICE_LOCALE, CURRENCY_CODE);
+        return '-' + utils.formatCurrency(RECENT, DEVICE_LOCALE, CURRENCY_CODE);
+    } else if (typeof(RECENT) === "number" && RECENT < 0) {
+        return '+' + utils.formatCurrency((RECENT * -1), DEVICE_LOCALE, CURRENCY_CODE);
     } else {
-        return '+' + formatCurrency((RECENT * -1), DEVICE_LOCALE, CURRENCY_CODE);
+        return "N/A";
+
     }
 }
 
