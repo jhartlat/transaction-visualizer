@@ -1,5 +1,5 @@
-const { smallWidget } = importModule("smallWidget");
-const { mediumWidget } = importModule("mediumWidget");
+const { smallWidget } = importModule("widgets/smallWidget");
+const { mediumWidget } = importModule("widgets/mediumWidget");
 
 
 const {
@@ -8,7 +8,7 @@ const {
     STYLE,
     extractDetails,
     calculateBalances
-} = importModule("constants");
+} = importModule("constants/constants");
 
 
 const {
@@ -57,10 +57,26 @@ function showWidget(widget) {
 
 
 function getPercentageFilled() {
-    if (CARD_TYPE !== "CURRENT BALANCE" && REMAINING_BALANCE > 0 && DECLINE_BACKGROUND === true) {
+    if (CARD_TYPE === "CURRENT BALANCE") {
+        return 1;
+    }
+
+    if  (REMAINING_BALANCE >= 0 && DECLINE_BACKGROUND === true) {
+//         console.log(REMAINING_BALANCE/MONTHLY_LIMIT);
         return REMAINING_BALANCE / MONTHLY_LIMIT;
     }
-    return 1;
+
+    if  (REMAINING_BALANCE >= 0 && DECLINE_BACKGROUND === false) {
+//         console.log(REMAINING_BALANCE/MONTHLY_LIMIT);
+        return 1;
+    }
+
+
+    if  (REMAINING_BALANCE <= 0) {
+//         console.log(REMAINING_BALANCE/MONTHLY_LIMIT);
+        return 0;
+    }
+
 }
 
 
@@ -74,25 +90,27 @@ function getWidgetDimensions() {
 
 
 function declineBackground(widget) {
-    const percentageFilled = getPercentageFilled();
-    const background = new DrawContext();
-    const colorWidth = width * percentageFilled;
-    const emptyWidth = width * (1 - percentageFilled);
-    const color = new Color(BACKGROUND_COLOR);
-    const empty = STYLE.color.empty;
-    const maxFunds = new Rect(0, 0, colorWidth, height);
-    const spentFunds = new Rect(colorWidth, 0, emptyWidth, height);
-
-
     const {
         width,
         height
     } = getWidgetDimensions();
-
+    const percentageFilled = getPercentageFilled();
+    const background = new DrawContext();
+    const colorWidth = width * percentageFilled;
+    const emptyWidth = width * (1 - percentageFilled);
+    console.log(emptyWidth);
+    const color = new Color(BACKGROUND_COLOR);
+    const empty = STYLE.color.empty;
+    const maxFunds = new Rect(0, 0, colorWidth, height);
+    const spentFunds = new Rect(colorWidth, 0, emptyWidth, height);
 
     background.size = new Size(width, height);
     background.setFillColor(color);
     background.fillRect(maxFunds);
     background.setFillColor(empty);
     background.fillRect(spentFunds);
+
+    widget.backgroundImage = background.getImage();
 }
+
+main();
