@@ -62,18 +62,15 @@ function getPercentageFilled() {
     }
 
     if  (REMAINING_BALANCE >= 0 && DECLINE_BACKGROUND === true) {
-//         console.log(REMAINING_BALANCE/MONTHLY_LIMIT);
         return REMAINING_BALANCE / MONTHLY_LIMIT;
     }
 
     if  (REMAINING_BALANCE >= 0 && DECLINE_BACKGROUND === false) {
-//         console.log(REMAINING_BALANCE/MONTHLY_LIMIT);
         return 1;
     }
 
 
     if  (REMAINING_BALANCE <= 0) {
-//         console.log(REMAINING_BALANCE/MONTHLY_LIMIT);
         return 0;
     }
 
@@ -98,7 +95,6 @@ function declineBackground(widget) {
     const background = new DrawContext();
     const colorWidth = width * percentageFilled;
     const emptyWidth = width * (1 - percentageFilled);
-    console.log(emptyWidth);
     const color = new Color(BACKGROUND_COLOR);
     const empty = STYLE.color.empty;
     const maxFunds = new Rect(0, 0, colorWidth, height);
@@ -112,5 +108,6 @@ function declineBackground(widget) {
 
     widget.backgroundImage = background.getImage();
 }
+
 
 main();
