@@ -46,8 +46,6 @@ function addCardNameLabel(row_1) {
 function smallRow_1(mainColumn) {
     const row_1 = mainColumn.addStack();
     addCardNameLabel(row_1);
-    //row_1.addSpacer();
-    //mainColumn.addSpacer();
 }
 
 
@@ -116,6 +114,7 @@ function getActivityAmount() {
 
     }
 }
+
 
 function addAmountLabel(row_4, formattedAmount) {
     const amountLabel = row_4.addText(formattedAmount);
