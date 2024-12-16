@@ -2,6 +2,7 @@ const {
     STYLE,
 } = importModule("constants/constants");
 
+
 function adjustBrightness(rgb, amount) {
     return {
         r: Math.min(255, Math.max(0, rgb.r + amount)),
@@ -58,6 +59,7 @@ function formatCurrency(amount, locale="en-US", currency="USD", includeCurrencyS
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
     };
+    
     if (includeCurrencySymbol) {
         options.style = "currency";
         options.currency = currency;

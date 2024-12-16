@@ -54,16 +54,15 @@ function extractDetails() {
 
 function getCardDetails() {
     const fm = FileManager.iCloud();
-    //const param = getWidgetParam();
+    const param = getWidgetParam();
     const lhs = fm.documentsDirectory();
-    const rhs = `transaction-visualizer/Test Card Name/config.json`;
+    const rhs = `transaction-visualizer/${param}/config.json`;
     const filePath = fm.joinPath(lhs, rhs);
     const content = fm.readString(filePath);
     try {
         return JSON.parse(content);
     } catch (error) {
         console.log(`Error parsing JSON: ${error}`);
-        //Script.complete();
     }
 }
 
@@ -82,8 +81,7 @@ function getWidgetParam() {
     if (!args.widgetParameter) {
         return widgetParamEmpty();
     } else {
-        //return args.widgetParameter.trimEnd();
-return "Test Card Name";
+        return args.widgetParameter.trimEnd();
     }
 }
 
