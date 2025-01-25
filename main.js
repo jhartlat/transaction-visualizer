@@ -1,5 +1,5 @@
-const { smallWidget } = importModule("widgets/smallWidget");
-const { mediumWidget } = importModule("widgets/mediumWidget");
+const { smallWidget } = importModule("transaction-visualizer/widgets/smallWidget");
+const { mediumWidget } = importModule("transaction-visualizer/widgets/mediumWidget");
 
 
 const {
@@ -8,7 +8,7 @@ const {
     STYLE,
     extractDetails,
     calculateBalances
-} = importModule("constants/constants");
+} = importModule("transaction-visualizer/constants/constants");
 
 
 const {

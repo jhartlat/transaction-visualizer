@@ -1,6 +1,6 @@
 const {
     STYLE,
-} = importModule("constants/constants");
+} = importModule("transaction-visualizer/constants/constants");
 
 
 function adjustBrightness(rgb, amount) {
@@ -59,7 +59,7 @@ function formatCurrency(amount, locale="en-US", currency="USD", includeCurrencyS
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
     };
-    
+
     if (includeCurrencySymbol) {
         options.style = "currency";
         options.currency = currency;

@@ -1,4 +1,4 @@
-const utils = importModule('utils/widgetUtils');
+const utils = importModule('transaction-visualizer/utils/widgetUtils');
 
 
 const {
@@ -6,7 +6,7 @@ const {
     STYLE,
     extractDetails,
     calculateBalances,
-} = importModule('constants/constants');
+} = importModule('transaction-visualizer/constants/constants');
 
 
 const {
