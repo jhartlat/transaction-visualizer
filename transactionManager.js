@@ -12,7 +12,7 @@ const KEYS = {
 
 
 function getFilePath(fileName) {
-    return FM.joinPath(DIRECTORY,`transaction-visualizer/${CARD_NAME}/${fileName}`);
+    return FM.joinPath(DIRECTORY,`transaction-visualizer/cards/${CARD_NAME}/${fileName}`);
 }
 
 
