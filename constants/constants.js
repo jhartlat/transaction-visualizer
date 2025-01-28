@@ -56,7 +56,7 @@ function getCardDetails() {
     const fm = FileManager.iCloud();
     const param = getWidgetParam();
     const lhs = fm.documentsDirectory();
-    const rhs = `transaction-visualizer/${param}/config.json`;
+    const rhs = `transaction-visualizer/cards/${param}/config.json`;
     const filePath = fm.joinPath(lhs, rhs);
     const content = fm.readString(filePath);
     try {
