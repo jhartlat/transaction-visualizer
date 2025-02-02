@@ -1,25 +1,20 @@
 // Repository Configuration
 const config = {
     owner: "jhartlat",
-    repo: args.shortcutParameter,
     branch: "main",
-    fm: FileManager.iCloud()
+    fm: FileManager.iCloud(),
 };
-
-config.baseURL = `https://api.github.com/repos/${config.owner}/${config.repo}/contents/`;
-config.dir = config.fm.documentsDirectory();
-config.rootPath = config.fm.joinPath(config.dir, `${config.repo}/`);
 
 /**
  * Fetch JSON data from a given URL.
- * @param {string} url - API to fetch data from.
+ * @param {string} url - API URL to fetch data from.
  * @returns {Promise<any>} - Parsed JSON response.
  */
 
 async function fetchJSON(url) {
     try {
-        let request = new Request(url);
-        return await request.loadJSON();
+        let req = new Request(url);
+        return await req.loadJSON();
     } catch (error) {
         console.error(`Failed to fetch JSON from ${url}: ${error}`);
         return [];
@@ -27,19 +22,19 @@ async function fetchJSON(url) {
 }
 
 /**
- * Downloads a single file from the given URL and saves it locally.
+ * Downloads a single file from a given URL and saves it locally.
  * @param {string} fileURL - URL of the file to download.
  * @param {string} localPath - Local path to save the file.
  */
 
 async function downloadFile(fileURL, localPath) {
     try {
-        let request = new Request(fileURL);
-        let content = await request.loadString();
+        let req = new Request(fileURL);
+        let content = await req.loadString();
         config.fm.writeString(localPath, content);
-        console.log(`Saved: ${localPath}`);
+        console.log(`✅ Saved: ${localPath}`);
     } catch (error) {
-        console.error(`Failed to download ${fileURL}: ${error}`);
+        console.error(`❌ Failed to download ${fileURL}: ${error}`);
     }
 }
 
@@ -48,7 +43,6 @@ async function downloadFile(fileURL, localPath) {
  * @param {string} apiURL - API URL to fetch repository contents.
  * @param {string} localPath - Local path to save repository contents.
  */
-
 async function downloadRepo(apiURL, localPath) {
     let items = await fetchJSON(apiURL);
 
@@ -57,16 +51,16 @@ async function downloadRepo(apiURL, localPath) {
 
         if (item.type === "file") {
             if (config.fm.fileExists(filePath)) {
-                console.log(`Skipping (exists): ${filePath}`);
+                console.log(`⚠️ Skipping (exists): ${filePath}`);
             } else {
-                console.log(`Downloading: ${filePath}`);
-                await downloadFile(item.download_url, filePath)
+                console.log(`⬇️ Downloading: ${filePath}`);
+                await downloadFile(item.download_url, filePath);
             }
         } else if (item.type === "dir") {
-            if (config.fm.fileExists(filePath) == false) {
+            if (!config.fm.fileExists(filePath)) {
                 config.fm.createDirectory(filePath);
             }
-            console.log(`Entering: ${item.name}`);
+            console.log(`📂 Entering: ${item.name}`);
             await downloadRepo(item.url, filePath);
         }
     }
@@ -74,13 +68,26 @@ async function downloadRepo(apiURL, localPath) {
 
 /**
  * Main function to start repository download.
+ * @param {string} repo - The repository name to download.
+ * @returns {string} - The local root path of the downloaded repository.
  */
-async function main(params) {
-    console.log("Starting repository download...");
-    await downloadRepo(`${config.baseURL}ref=${config.branch}`, config.rootPath);
-    console.log("Repository download complete!");
+async function main(repo) {
+    if (!repo) {
+        console.error("❌ Repository name is required.");
+        return null;
+    }
 
-    Script.setShortcutOutput(config.rootPath);
+    config.repo = repo;
+    config.baseURL = `https://api.github.com/repos/${config.owner}/${config.repo}/contents/`;
+    config.dir = config.fm.documentsDirectory();
+    config.rootPath = config.fm.joinPath(config.dir, `${config.repo}/`);
+
+    console.log(`🚀 Starting repository download for: ${repo}...`);
+    await downloadRepo(`${config.baseURL}?ref=${config.branch}`, config.rootPath);
+    console.log("✅ Repository download complete!");
+
+    return config.rootPath;
 }
 
-await main();
+// Exporting the main function to be used as a module
+module.exports = { main };
