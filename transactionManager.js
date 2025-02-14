@@ -204,5 +204,8 @@ function main() {
 
 main();
 
+module.export = {
+    main;
+}
 
 Script.complete();
