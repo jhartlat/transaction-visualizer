@@ -201,11 +201,6 @@ function main() {
     }
 }
 
-
-main();
-
-module.export = {
-    main;
-}
-
-Script.complete();
+module.exports = {
+    main
+};
