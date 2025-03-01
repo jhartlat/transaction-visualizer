@@ -67,6 +67,7 @@ function mediumRow_1(mainColumn) {
 function addCurrentBalance(row_2) {
     const currentBalance = utils.formatCurrency(TOTAL_SPENT, DEVICE_LOCALE, CURRENCY_CODE);
     const currentBalanceLabel = row_2.addText(currentBalance);
+    currentBalanceLabel.font = STYLE.font.row_2;
 }
 
 
