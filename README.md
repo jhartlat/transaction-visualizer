@@ -4,6 +4,7 @@
 
 Stay on top of your monthly budget effortlessly with this customizable solution.
 
+![Diagram](tv.png)
 ---
 
 ## Description
@@ -43,6 +44,7 @@ Transaction Visualizer aggregates and displays your credit card spending progres
 
 ---
 
+![Demo](widget-demo.gif)
 ## Upcoming Improvements
 
 - Enhanced manual editing options.
